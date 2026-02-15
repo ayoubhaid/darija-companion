@@ -38,7 +38,7 @@ export interface Lesson {
   title: string;
   description: string;
   content: LessonContent;
-  contentHtml?: string; // Rich text HTML content
+  contentHtml?: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration: number;
   tags: string[];
@@ -62,7 +62,7 @@ export interface Question {
   explanation: string;
   audioUrl?: string;
   imageUrl?: string;
-  matchingPairs?: { left: string; right: string }[]; // For matching type
+  matchingPairs?: { left: string; right: string }[];
 }
 
 export interface Quiz {
@@ -99,6 +99,10 @@ export interface UserProfile {
   createdAt: string;
   isAdmin?: boolean;
   achievements?: string[];
+  skillLevel: number;
+  accuracyRate: number;
+  quizzesCompleted: number;
+  lessonsCompleted: number;
   preferences?: {
     showTransliteration: boolean;
     showArabic: boolean;
@@ -139,4 +143,58 @@ export interface Stats {
   totalVocabulary: number;
   totalQuizzes: number;
   totalUsers: number;
+}
+
+export interface UserVocabularyProgress {
+  id: string;
+  userId: string;
+  wordId: string;
+  easeFactor: number;
+  intervalDays: number;
+  repetitions: number;
+  nextReviewDate: string;
+  successRate: number;
+  totalAttempts: number;
+  successfulAttempts: number;
+  lastReviewed: string;
+}
+
+export interface SpacedRepetitionSession {
+  questions: SpacedRepetitionQuestion[];
+  sessionType: 'review' | 'practice' | 'mixed';
+  totalQuestions: number;
+}
+
+export interface SpacedRepetitionQuestion {
+  id: string;
+  wordId: string;
+  word: string;
+  translation: string;
+  transliteration: string;
+  arabic: string;
+  category: string;
+  questionType: 'translation' | 'multipleChoice';
+  options?: string[];
+  correctAnswer: string;
+}
+
+export interface AnswerResult {
+  wordId: string;
+  correct: boolean;
+  timeTaken: number;
+  xpEarned: number;
+  newEaseFactor: number;
+  newInterval: number;
+  newRepetitions: number;
+  nextReviewDate: string;
+}
+
+export interface SessionResult {
+  totalQuestions: number;
+  correctAnswers: number;
+  accuracy: number;
+  totalXpEarned: number;
+  sessionType: string;
+  answers: AnswerResult[];
+  skillLevelChange: number;
 }

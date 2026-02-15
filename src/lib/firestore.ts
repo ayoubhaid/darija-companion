@@ -207,6 +207,10 @@ export const createUserProfile = async (
     totalXP: 0,
     lastActive: new Date().toISOString(),
     createdAt: new Date().toISOString(),
+    skillLevel: 1,
+    accuracyRate: 0,
+    quizzesCompleted: 0,
+    lessonsCompleted: 0,
     preferences: {
       showTransliteration: true,
       showArabic: true,
