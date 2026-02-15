@@ -70,19 +70,19 @@ export const getQuizzesByDifficulty = async (
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Quiz));
 };
 
-export const getAllVocabulary = async (): Promise<Vocabulary[]> => {
+export const getAllVocabulary = async (): Promise<VocabularyItem[]> => {
   const vocabRef = collection(db, collections.vocabulary);
   const snapshot = await getDocs(vocabRef);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Vocabulary));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as VocabularyItem));
 };
 
 export const getVocabularyByCategory = async (
   category: string
-): Promise<Vocabulary[]> => {
+): Promise<VocabularyItem[]> => {
   const vocabRef = collection(db, collections.vocabulary);
   const q = query(vocabRef, where('category', '==', category));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Vocabulary));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as VocabularyItem));
 };
 
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
