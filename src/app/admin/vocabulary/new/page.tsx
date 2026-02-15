@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createVocabulary } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
-import { ArrowLeft, Save } from 'lucide-react';
+import { uploadAudioFile } from '@/lib/audio';
+import { ArrowLeft, Save, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -17,6 +18,11 @@ export default function NewVocabularyPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioPreview, setAudioPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [formData, setFormData] = useState({
     word: '',
     transliteration: '',
@@ -26,7 +32,28 @@ export default function NewVocabularyPage() {
     difficulty: 'beginner',
     example: '',
     exampleTranslation: '',
+    audioUrl: '',
   });
+
+  const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Audio file must be less than 5MB');
+        return;
+      }
+      setAudioFile(file);
+      setAudioPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeAudio = () => {
+    setAudioFile(null);
+    setAudioPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +61,20 @@ export default function NewVocabularyPage() {
 
     setSaving(true);
     try {
-      await createVocabulary(formData, user.uid, user.displayName || 'Admin');
+      let audioUrl = formData.audioUrl;
+
+      if (audioFile) {
+        setUploading(true);
+        audioUrl = await uploadAudioFile(audioFile, user.uid);
+        setUploading(false);
+      }
+
+      const vocabularyData = {
+        ...formData,
+        audioUrl,
+      };
+
+      await createVocabulary(vocabularyData, user.uid, user.displayName || 'Admin');
       router.push('/admin/vocabulary');
     } catch (error) {
       console.error('Error saving vocabulary:', error);
@@ -94,6 +134,46 @@ export default function NewVocabularyPage() {
                 required
               />
 
+              {/* Audio Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Audio Pronunciation (optional)
+                </label>
+                
+                {audioPreview || formData.audioUrl ? (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <audio controls className="flex-1 h-10">
+                      <source src={audioPreview || formData.audioUrl} />
+                      Your browser does not support audio.
+                    </audio>
+                    <button
+                      type="button"
+                      onClick={removeAudio}
+                      className="p-2 text-gray-500 hover:text-red-500"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleAudioChange}
+                      className="hidden"
+                    />
+                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500">
+                      Click to upload audio file (MP3, WAV, max 5MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
@@ -140,9 +220,9 @@ export default function NewVocabularyPage() {
               <Link href="/admin/vocabulary">
                 <Button variant="outline" type="button">Cancel</Button>
               </Link>
-              <Button type="submit" loading={saving}>
+              <Button type="submit" loading={saving || uploading} disabled={uploading}>
                 <Save className="w-5 h-5 mr-2" />
-                {saving ? 'Saving...' : 'Save Word'}
+                {uploading ? 'Uploading...' : saving ? 'Saving...' : 'Save Word'}
               </Button>
             </div>
           </Card>

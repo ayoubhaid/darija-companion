@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import AudioPlayer from '@/components/ui/AudioPlayer';
 import { Lesson, VocabularyItem } from '@/types';
 import { getLessonById, updateUserProgress } from '@/lib/firestore';
 import { 

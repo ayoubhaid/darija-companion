@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import AudioPlayer from '@/components/ui/AudioPlayer';
 import { VocabularyItem } from '@/types';
 import { getAllVocabulary } from '@/lib/firestore';
 import { 
@@ -167,6 +168,11 @@ export default function VocabularyPage() {
                   <p className="text-2xl mt-4 arabic-text text-zinc-700 dark:text-zinc-300" dir="rtl">
                     {currentCard.arabic}
                   </p>
+                )}
+                {currentCard?.audioUrl && (
+                  <div className="mt-4 flex justify-center">
+                    <AudioPlayer audioUrl={currentCard.audioUrl} />
+                  </div>
                 )}
               </div>
             ) : (
