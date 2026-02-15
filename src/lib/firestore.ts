@@ -12,7 +12,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Lesson, Quiz, Vocabulary, UserProfile } from '@/types';
+import { Lesson, Quiz, VocabularyItem, UserProfile } from '@/types';
 
 const collections = {
   lessons: 'lessons',
