@@ -1,9 +1,6 @@
-'use client';
-
 import type { Metadata } from 'next';
 import './globals.css';
-import { AuthProvider } from '@/hooks/useAuth';
-import Navbar from '@/components/layout/Navbar';
+import Providers from '@/components/Providers';
 
 export const metadata: Metadata = {
   title: 'Darija Companion - Learn Moroccan Arabic',
@@ -19,10 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 dark:bg-slate-900">
-        <AuthProvider>
-          <Navbar />
-          <main>{children}</main>
-        </AuthProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
