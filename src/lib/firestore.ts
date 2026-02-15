@@ -1,17 +1,3 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-  setDoc,
-  updateDoc,
-  increment,
-  addDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { db } from './firebase';
 import { Lesson, Quiz, VocabularyItem, UserProfile } from '@/types';
 
 import lessonsData from '@/data/lessons.json';
@@ -30,13 +16,15 @@ const collections = {
 
 export const getAllLessons = async (): Promise<Lesson[]> => {
   if (USE_MOCK_DATA) {
-    return lessonsData as unknown as unknown as Lesson[];
+    return lessonsData as unknown as Lesson[];
   }
   
   try {
+    const { collection, getDocs } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
     const lessonsRef = collection(db, collections.lessons);
     const snapshot = await getDocs(lessonsRef);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Lesson));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Lesson));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
     return lessonsData as unknown as Lesson[];
@@ -50,6 +38,8 @@ export const getLessonById = async (id: string): Promise<Lesson | null> => {
   }
   
   try {
+    const { doc, getDoc } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
     const lessonRef = doc(db, collections.lessons, id);
     const snapshot = await getDoc(lessonRef);
     if (snapshot.exists()) {
@@ -69,10 +59,12 @@ export const getLessonsByDifficulty = async (difficulty: string): Promise<Lesson
   }
   
   try {
+    const { collection, query, where, getDocs } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
     const lessonsRef = collection(db, collections.lessons);
     const q = query(lessonsRef, where('difficulty', '==', difficulty));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Lesson));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Lesson));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
     return (lessonsData as unknown as Lesson[]).filter(l => l.difficulty === difficulty);
@@ -85,9 +77,11 @@ export const getAllQuizzes = async (): Promise<Quiz[]> => {
   }
   
   try {
+    const { collection, getDocs } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
     const quizzesRef = collection(db, collections.quizzes);
     const snapshot = await getDocs(quizzesRef);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Quiz));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Quiz));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
     return quizzesData as unknown as Quiz[];
@@ -101,6 +95,8 @@ export const getQuizById = async (id: string): Promise<Quiz | null> => {
   }
   
   try {
+    const { doc, getDoc } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
     const quizRef = doc(db, collections.quizzes, id);
     const snapshot = await getDoc(quizRef);
     if (snapshot.exists()) {
@@ -120,10 +116,12 @@ export const getQuizzesByDifficulty = async (difficulty: string): Promise<Quiz[]
   }
   
   try {
+    const { collection, query, where, getDocs } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
     const quizzesRef = collection(db, collections.quizzes);
     const q = query(quizzesRef, where('difficulty', '==', difficulty));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Quiz));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Quiz));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
     return (quizzesData as unknown as Quiz[]).filter(q => q.difficulty === difficulty);
@@ -136,9 +134,11 @@ export const getAllVocabulary = async (): Promise<VocabularyItem[]> => {
   }
   
   try {
+    const { collection, getDocs } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
     const vocabRef = collection(db, collections.vocabulary);
     const snapshot = await getDocs(vocabRef);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as VocabularyItem));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as VocabularyItem));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
     return vocabularyData as unknown as VocabularyItem[];
@@ -151,10 +151,12 @@ export const getVocabularyByCategory = async (category: string): Promise<Vocabul
   }
   
   try {
+    const { collection, query, where, getDocs } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
     const vocabRef = collection(db, collections.vocabulary);
     const q = query(vocabRef, where('category', '==', category));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as VocabularyItem));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as VocabularyItem));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
     return (vocabularyData as unknown as VocabularyItem[]).filter(v => v.category === category);
@@ -167,6 +169,8 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
   }
   
   try {
+    const { doc, getDoc } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
     const userRef = doc(db, collections.users, userId);
     const snapshot = await getDoc(userRef);
     if (snapshot.exists()) {
@@ -188,6 +192,8 @@ export const createUserProfile = async (
     return;
   }
   
+  const { doc, setDoc } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
   const userRef = doc(db, collections.users, userId);
   const initialProfile: Omit<UserProfile, 'id'> = {
     email,
@@ -221,6 +227,8 @@ export const updateUserProgress = async (
     return;
   }
   
+  const { doc, updateDoc, increment } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
   const userRef = doc(db, collections.users, userId);
   const updates: Record<string, unknown> = {
     lastActive: new Date().toISOString(),
@@ -251,6 +259,8 @@ export const recordQuizResult = async (
     return;
   }
   
+  const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
   const resultsRef = collection(db, collections.users, userId, 'quizResults');
   await addDoc(resultsRef, {
     quizId,
