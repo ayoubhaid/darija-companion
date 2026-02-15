@@ -94,6 +94,7 @@ interface UserProfile {
   totalXP: number;
   lastActive: string;
   createdAt: string;
+  isAdmin?: boolean;
   achievements?: string[];
   preferences?: {
     showTransliteration: boolean;
