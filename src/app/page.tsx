@@ -1,15 +1,24 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
+import { getAllLessons, getAllVocabulary, getAllQuizzes } from '@/lib/firestore';
+import { Lesson, Quiz, VocabularyItem } from '@/types';
 import { 
   BookOpenIcon, 
   AcademicCapIcon, 
   FireIcon,
-  UserGroupIcon,
   ChartBarIcon,
   SparklesIcon,
   ArrowRightIcon,
-  StarIcon
+  StarIcon,
+  TrophyIcon,
+  BoltIcon,
+  PlayIcon
 } from '@heroicons/react/24/outline';
 
 const features = [
@@ -53,12 +62,11 @@ const testimonials = [
   { name: 'Lisa R.', text: 'Love the gamification. Makes learning feel like a game!' },
 ];
 
-export default function HomePage() {
+function GuestLanding() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-zinc-950">
-        {/* Animated background */}
         <div className="absolute inset-0 bg-dots opacity-30" />
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }} />
@@ -93,7 +101,6 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-4 gap-8 mt-20 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
               {stats.map((stat) => (
                 <div key={stat.label} className="text-center">
@@ -105,7 +112,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Bottom gradient */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-zinc-950 to-transparent" />
       </section>
 
@@ -208,4 +214,248 @@ export default function HomePage() {
       </footer>
     </div>
   );
+}
+
+function UserDashboard({ userProfile }: { userProfile: any }) {
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [vocabulary, setVocabulary] = useState<VocabularyItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [lessonsData, quizzesData, vocabData] = await Promise.all([
+          getAllLessons(),
+          getAllQuizzes(),
+          getAllVocabulary()
+        ]);
+        setLessons(lessonsData);
+        setQuizzes(quizzesData);
+        setVocabulary(vocabData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const xp = userProfile?.xp || 0;
+  const level = userProfile?.level || 1;
+  const streak = userProfile?.streak || 0;
+  const xpToNextLevel = level * 100;
+  const xpProgress = (xp % xpToNextLevel) / xpToNextLevel * 100;
+
+  const quickActions = [
+    { 
+      title: 'Lessons', 
+      description: `${lessons.length} available`,
+      href: '/lessons', 
+      icon: BookOpenIcon,
+      gradient: 'from-emerald-500 to-teal-600'
+    },
+    { 
+      title: 'Vocabulary', 
+      description: `${vocabulary.length} words`,
+      href: '/vocabulary', 
+      icon: AcademicCapIcon,
+      gradient: 'from-cyan-500 to-blue-600'
+    },
+    { 
+      title: 'Quizzes', 
+      description: `${quizzes.length} available`,
+      href: '/quizzes', 
+      icon: FireIcon,
+      gradient: 'from-orange-500 to-red-500'
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-2">
+            Welcome back, {userProfile?.displayName || 'Learner'}!
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-400">
+            Continue your Darija learning journey
+          </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* XP Card */}
+          <Card variant="default" className="relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full -mr-8 -mt-8" />
+            <div className="relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <BoltIcon className="w-5 h-5 text-primary" />
+                </div>
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Total XP</span>
+              </div>
+              <div className="text-3xl font-bold text-zinc-900 dark:text-white">{xp.toLocaleString()}</div>
+              <div className="mt-3">
+                <div className="flex justify-between text-xs text-zinc-500 mb-1">
+                  <span>Level {level}</span>
+                  <span>{Math.round(xpProgress)}%</span>
+                </div>
+                <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500"
+                    style={{ width: `${xpProgress}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Streak Card */}
+          <Card variant="default" className="relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full -mr-8 -mt-8" />
+            <div className="relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                  <FireIcon className="w-5 h-5 text-orange-500" />
+                </div>
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Day Streak</span>
+              </div>
+              <div className="text-3xl font-bold text-zinc-900 dark:text-white">{streak} days</div>
+              <p className="text-sm text-zinc-500 mt-3">Keep learning daily!</p>
+            </div>
+          </Card>
+
+          {/* Quizzes Completed Card */}
+          <Card variant="default" className="relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-violet-500/10 rounded-full -mr-8 -mt-8" />
+            <div className="relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                  <TrophyIcon className="w-5 h-5 text-violet-500" />
+                </div>
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Completed</span>
+              </div>
+              <div className="text-3xl font-bold text-zinc-900 dark:text-white">
+                {userProfile?.quizzesCompleted || 0} Quizzes
+              </div>
+              <p className="text-sm text-zinc-500 mt-3">
+                {userProfile?.lessonsCompleted || 0} Lessons completed
+              </p>
+            </div>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {quickActions.map((action) => (
+              <Link key={action.title} href={action.href}>
+                <Card variant="interactive" className="h-full group">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200`}>
+                      <action.icon className="w-7 h-7 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-zinc-900 dark:text-white group-hover:text-primary transition-colors">
+                        {action.title}
+                      </h3>
+                      <p className="text-sm text-zinc-500">{action.description}</p>
+                    </div>
+                    <ArrowRightIcon className="w-5 h-5 text-zinc-400 ml-auto group-hover:text-primary transition-colors" />
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Continue Learning Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Featured Lesson */}
+          <div>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">Featured Lesson</h2>
+            {lessons.length > 0 ? (
+              <Link href={`/lessons/${lessons[0].id}`}>
+                <Card variant="interactive" className="group">
+                  <div className="flex items-start gap-4">
+                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                      <BookOpenIcon className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <Badge variant="success" className="mb-2">{lessons[0].difficulty}</Badge>
+                      <h3 className="font-semibold text-zinc-900 dark:text-white group-hover:text-primary transition-colors">
+                        {lessons[0].title}
+                      </h3>
+                      <p className="text-sm text-zinc-500 line-clamp-2">{lessons[0].description}</p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ) : (
+              <Card variant="default" className="text-center py-8">
+                <p className="text-zinc-500">No lessons available yet</p>
+              </Card>
+            )}
+          </div>
+
+          {/* Featured Quiz */}
+          <div>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">Test Your Knowledge</h2>
+            {quizzes.length > 0 ? (
+              <Link href={`/quizzes/${quizzes[0].id}`}>
+                <Card variant="interactive" className="group">
+                  <div className="flex items-start gap-4">
+                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                      <FireIcon className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <Badge variant="primary" className="mb-2">{quizzes[0].xpReward || 10} XP</Badge>
+                      <h3 className="font-semibold text-zinc-900 dark:text-white group-hover:text-primary transition-colors">
+                        {quizzes[0].title}
+                      </h3>
+                      <p className="text-sm text-zinc-500 line-clamp-2">{quizzes[0].description}</p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ) : (
+              <Card variant="default" className="text-center py-8">
+                <p className="text-zinc-500">No quizzes available yet</p>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function HomePage() {
+  const { user, userProfile, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (user && userProfile) {
+    return <UserDashboard userProfile={userProfile} />;
+  }
+
+  return <GuestLanding />;
 }
