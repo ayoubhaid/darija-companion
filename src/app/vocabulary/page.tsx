@@ -37,7 +37,7 @@ export default function VocabularyPage() {
     fetchVocabulary();
   }, []);
 
-  const categories = [...new Set(vocabulary.map(v => v.category))];
+  const categories = Array.from(new Set(vocabulary.map(v => v.category)));
   
   const filteredVocab = categoryFilter === 'all' 
     ? vocabulary 
