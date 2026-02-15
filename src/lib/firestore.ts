@@ -30,7 +30,7 @@ const collections = {
 
 export const getAllLessons = async (): Promise<Lesson[]> => {
   if (USE_MOCK_DATA) {
-    return lessonsData as Lesson[];
+    return lessonsData as unknown as unknown as Lesson[];
   }
   
   try {
@@ -39,13 +39,13 @@ export const getAllLessons = async (): Promise<Lesson[]> => {
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Lesson));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
-    return lessonsData as Lesson[];
+    return lessonsData as unknown as Lesson[];
   }
 };
 
 export const getLessonById = async (id: string): Promise<Lesson | null> => {
   if (USE_MOCK_DATA) {
-    const lesson = (lessonsData as Lesson[]).find(l => l.id === id);
+    const lesson = (lessonsData as unknown as Lesson[]).find(l => l.id === id);
     return lesson || null;
   }
   
@@ -58,14 +58,14 @@ export const getLessonById = async (id: string): Promise<Lesson | null> => {
     return null;
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
-    const lesson = (lessonsData as Lesson[]).find(l => l.id === id);
+    const lesson = (lessonsData as unknown as Lesson[]).find(l => l.id === id);
     return lesson || null;
   }
 };
 
 export const getLessonsByDifficulty = async (difficulty: string): Promise<Lesson[]> => {
   if (USE_MOCK_DATA) {
-    return (lessonsData as Lesson[]).filter(l => l.difficulty === difficulty);
+    return (lessonsData as unknown as Lesson[]).filter(l => l.difficulty === difficulty);
   }
   
   try {
@@ -75,13 +75,13 @@ export const getLessonsByDifficulty = async (difficulty: string): Promise<Lesson
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Lesson));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
-    return (lessonsData as Lesson[]).filter(l => l.difficulty === difficulty);
+    return (lessonsData as unknown as Lesson[]).filter(l => l.difficulty === difficulty);
   }
 };
 
 export const getAllQuizzes = async (): Promise<Quiz[]> => {
   if (USE_MOCK_DATA) {
-    return quizzesData as Quiz[];
+    return quizzesData as unknown as Quiz[];
   }
   
   try {
@@ -90,13 +90,13 @@ export const getAllQuizzes = async (): Promise<Quiz[]> => {
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Quiz));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
-    return quizzesData as Quiz[];
+    return quizzesData as unknown as Quiz[];
   }
 };
 
 export const getQuizById = async (id: string): Promise<Quiz | null> => {
   if (USE_MOCK_DATA) {
-    const quiz = (quizzesData as Quiz[]).find(q => q.id === id);
+    const quiz = (quizzesData as unknown as Quiz[]).find(q => q.id === id);
     return quiz || null;
   }
   
@@ -109,14 +109,14 @@ export const getQuizById = async (id: string): Promise<Quiz | null> => {
     return null;
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
-    const quiz = (quizzesData as Quiz[]).find(q => q.id === id);
+    const quiz = (quizzesData as unknown as Quiz[]).find(q => q.id === id);
     return quiz || null;
   }
 };
 
 export const getQuizzesByDifficulty = async (difficulty: string): Promise<Quiz[]> => {
   if (USE_MOCK_DATA) {
-    return (quizzesData as Quiz[]).filter(q => q.difficulty === difficulty);
+    return (quizzesData as unknown as Quiz[]).filter(q => q.difficulty === difficulty);
   }
   
   try {
@@ -126,13 +126,13 @@ export const getQuizzesByDifficulty = async (difficulty: string): Promise<Quiz[]
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Quiz));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
-    return (quizzesData as Quiz[]).filter(q => q.difficulty === difficulty);
+    return (quizzesData as unknown as Quiz[]).filter(q => q.difficulty === difficulty);
   }
 };
 
 export const getAllVocabulary = async (): Promise<VocabularyItem[]> => {
   if (USE_MOCK_DATA) {
-    return vocabularyData as VocabularyItem[];
+    return vocabularyData as unknown as VocabularyItem[];
   }
   
   try {
@@ -141,13 +141,13 @@ export const getAllVocabulary = async (): Promise<VocabularyItem[]> => {
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as VocabularyItem));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
-    return vocabularyData as VocabularyItem[];
+    return vocabularyData as unknown as VocabularyItem[];
   }
 };
 
 export const getVocabularyByCategory = async (category: string): Promise<VocabularyItem[]> => {
   if (USE_MOCK_DATA) {
-    return (vocabularyData as VocabularyItem[]).filter(v => v.category === category);
+    return (vocabularyData as unknown as VocabularyItem[]).filter(v => v.category === category);
   }
   
   try {
@@ -157,7 +157,7 @@ export const getVocabularyByCategory = async (category: string): Promise<Vocabul
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as VocabularyItem));
   } catch (error) {
     console.warn('Firebase error, falling back to mock data:', error);
-    return (vocabularyData as VocabularyItem[]).filter(v => v.category === category);
+    return (vocabularyData as unknown as VocabularyItem[]).filter(v => v.category === category);
   }
 };
 
