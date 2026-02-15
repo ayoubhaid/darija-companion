@@ -1,0 +1,92 @@
+[
+  {
+    "id": "quiz_001",
+    "title": "Greetings Mastery Quiz",
+    "description": "Test your knowledge of basic Darija greetings",
+    "type": "vocabulary",
+    "questions": [
+      { "question": "What does 'Salam' mean?", "type": "multipleChoice", "options": ["Goodbye", "Hello/Peace", "Thank you", "Please"], "correctAnswer": "Hello/Peace", "correctAnswerIndex": 1, "points": 10, "explanation": "Salam means peace and is used as a greeting" },
+      { "question": "How do you say 'Thank you' in Darija?", "type": "multipleChoice", "options": ["Salam", "Marhaba", "Shukran", "Afak"], "correctAnswer": "Shukran", "correctAnswerIndex": 2, "points": 10, "explanation": "Shukran is the word for thank you" },
+      { "question": "Translate 'Please' to Darija", "type": "fillInTheBlank", "options": null, "correctAnswer": "Afak", "correctAnswerIndex": null, "points": 15, "explanation": "Afak means please" },
+      { "question": "Which greeting is most formal?", "type": "multipleChoice", "options": ["Salam", "Marhaba", "Shukran", "Afak"], "correctAnswer": "Marhaba", "correctAnswerIndex": 1, "points": 10, "explanation": "Marhaba is more formal than Salam" }
+    ],
+    "totalQuestions": 4,
+    "timeLimit": 300,
+    "passingScore": 70,
+    "isAdaptive": false,
+    "difficulty": "beginner",
+    "xpReward": 20
+  },
+  {
+    "id": "quiz_002",
+    "title": "Numbers Challenge",
+    "description": "Test your counting skills in Darija",
+    "type": "mixed",
+    "questions": [
+      { "question": "What is 'Wahid' in English?", "type": "multipleChoice", "options": ["Two", "One", "Three", "Four"], "correctAnswer": "One", "correctAnswerIndex": 1, "points": 10, "explanation": "Wahid means one" },
+      { "question": "How do you say 'Two' in Darija?", "type": "multipleChoice", "options": ["Wahid", "Ithnin", "Thalatha", "Arbaa"], "correctAnswer": "Ithnin", "correctAnswerIndex": 1, "points": 10, "explanation": "Ithnin means two" },
+      { "question": "What number is 'Khamsa'?", "type": "multipleChoice", "options": ["Three", "Four", "Five", "Six"], "correctAnswer": "Five", "correctAnswerIndex": 2, "points": 10, "explanation": "Khamsa means five" },
+      { "question": "Translate 'Seven' to Darija", "type": "fillInTheBlank", "options": null, "correctAnswer": "Sabaa", "correctAnswerIndex": null, "points": 15, "explanation": "Sabaa means seven" }
+    ],
+    "totalQuestions": 4,
+    "timeLimit": 300,
+    "passingScore": 70,
+    "isAdaptive": false,
+    "difficulty": "beginner",
+    "xpReward": 25
+  },
+  {
+    "id": "quiz_003",
+    "title": "Family Vocabulary Quiz",
+    "description": "Test your family member vocabulary",
+    "type": "vocabulary",
+    "questions": [
+      { "question": "Who is 'Baba'?", "type": "multipleChoice", "options": ["Mother", "Father", "Brother", "Sister"], "correctAnswer": "Father", "correctAnswerIndex": 1, "points": 10, "explanation": "Baba means father" },
+      { "question": "What does 'Weld' mean?", "type": "multipleChoice", "options": ["Daughter", "Son", "Mother", "Father"], "correctAnswer": "Son", "correctAnswerIndex": 1, "points": 10, "explanation": "Weld means son" },
+      { "question": "How do you say 'Sister' in Darija?", "type": "multipleChoice", "options": ["Khu", "Ukht", "Baba", "Mama"], "correctAnswer": "Ukht", "correctAnswerIndex": 1, "points": 10, "explanation": "Ukht means sister" },
+      { "question": "What is 'Mama'?", "type": "multipleChoice", "options": ["Father", "Mother", "Brother", "Daughter"], "correctAnswer": "Mother", "correctAnswerIndex": 1, "points": 10, "explanation": "Mama means mother" }
+    ],
+    "totalQuestions": 4,
+    "timeLimit": 300,
+    "passingScore": 70,
+    "isAdaptive": false,
+    "difficulty": "beginner",
+    "xpReward": 20
+  },
+  {
+    "id": "quiz_004",
+    "title": "Common Phrases Quiz",
+    "description": "Test your knowledge of everyday phrases",
+    "type": "mixed",
+    "questions": [
+      { "question": "What does 'Labas' mean?", "type": "multipleChoice", "options": ["Goodbye", "How are you?", "Thank you", "Please"], "correctAnswer": "How are you?", "correctAnswerIndex": 1, "points": 10, "explanation": "Labas is used to ask how someone is" },
+      { "question": "How do you say 'Yes' in Darija?", "type": "multipleChoice", "options": ["La", "Naam", "Mzyan", "Besh"], "correctAnswer": "Naam", "correctAnswerIndex": 1, "points": 10, "explanation": "Naam means yes" },
+      { "question": "What is the opposite of 'La'?", "type": "multipleChoice", "options": ["Naam", "Besh", "Mzyan", "Labas"], "correctAnswer": "Naam", "correctAnswerIndex": 0, "points": 10, "explanation": "La means no, Naam means yes" },
+      { "question": "What does 'Mzyan' mean?", "type": "multipleChoice", "options": ["Bad", "Good", "Hello", "Goodbye"], "correctAnswer": "Good", "correctAnswerIndex": 1, "points": 10, "explanation": "Mzyan means good/fine" }
+    ],
+    "totalQuestions": 4,
+    "timeLimit": 300,
+    "passingScore": 70,
+    "isAdaptive": false,
+    "difficulty": "beginner",
+    "xpReward": 20
+  },
+  {
+    "id": "quiz_005",
+    "title": "Food & Drinks Quiz",
+    "description": "Test your food vocabulary",
+    "type": "vocabulary",
+    "questions": [
+      { "question": "What is 'Lma'?", "type": "multipleChoice", "options": ["Tea", "Bread", "Water", "Milk"], "correctAnswer": "Water", "correctAnswerIndex": 2, "points": 10, "explanation": "Lma means water" },
+      { "question": "How do you say 'Tea' in Darija?", "type": "multipleChoice", "options": ["Lma", "Lahm", "Atay", "Lkhobz"], "correctAnswer": "Atay", "correctAnswerIndex": 2, "points": 10, "explanation": "Atay means tea" },
+      { "question": "What does 'Lahm' mean?", "type": "multipleChoice", "options": ["Fish", "Bread", "Meat", "Vegetables"], "correctAnswer": "Meat", "correctAnswerIndex": 2, "points": 10, "explanation": "Lahm means meat" },
+      { "question": "What is 'Samak'?", "type": "multipleChoice", "options": ["Meat", "Chicken", "Fish", "Bread"], "correctAnswer": "Fish", "correctAnswerIndex": 2, "points": 10, "explanation": "Samak means fish" }
+    ],
+    "totalQuestions": 4,
+    "timeLimit": 300,
+    "passingScore": 70,
+    "isAdaptive": false,
+    "difficulty": "intermediate",
+    "xpReward": 25
+  }
+]

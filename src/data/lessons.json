@@ -1,0 +1,124 @@
+[
+  {
+    "id": "lesson_001",
+    "title": "Basic Greetings",
+    "description": "Learn essential Moroccan Arabic greetings and introductions",
+    "content": {
+      "vocabulary": [
+        { "word": "Salam", "transliteration": "Salam", "translation": "Hello/Peace", "arabic": "سلام" },
+        { "word": "Marhaba", "transliteration": "Marhaba", "translation": "Welcome", "arabic": "مرحبا" },
+        { "word": "Shukran", "transliteration": "Shukran", "translation": "Thank you", "arabic": "شكرا" },
+        { "word": "Afak", "transliteration": "Afak", "translation": "Please", "arabic": "أفاك" }
+      ],
+      "sentences": [
+        "Salam, kif dayr?",
+        "Marhaba bik",
+        "Shukran bzaf",
+        "Afak, mumkin?"
+      ],
+      "exercises": []
+    },
+    "difficulty": "beginner",
+    "duration": 15,
+    "tags": ["greetings", "basics"],
+    "topic": "greetings"
+  },
+  {
+    "id": "lesson_002",
+    "title": "Numbers 1-10",
+    "description": "Master counting from one to ten in Moroccan Arabic",
+    "content": {
+      "vocabulary": [
+        { "word": "Wahid", "transliteration": "Wahid", "translation": "One", "arabic": "واحد" },
+        { "word": "Ithnin", "transliteration": "Ithnin", "translation": "Two", "arabic": "اتنين" },
+        { "word": "Thalatha", "transliteration": "Thalatha", "translation": "Three", "arabic": "تلاتة" },
+        { "word": "Arbaa", "transliteration": "Arbaa", "translation": "Four", "arabic": "أربعة" },
+        { "word": "Khamsa", "transliteration": "Khamsa", "translation": "Five", "arabic": "خمسة" }
+      ],
+      "sentences": [
+        "Wahid, ithnin, thalatha",
+        "Arbaa, khamsa, sitta",
+        "Sabaa, thamaniya, tes3a, ashra"
+      ],
+      "exercises": []
+    },
+    "difficulty": "beginner",
+    "duration": 20,
+    "tags": ["numbers", "basics"],
+    "topic": "numbers"
+  },
+  {
+    "id": "lesson_003",
+    "title": "Common Phrases",
+    "description": "Essential everyday phrases for conversation",
+    "content": {
+      "vocabulary": [
+        { "word": "Labas", "transliteration": "Labas", "translation": "How are you?", "arabic": "لاباس" },
+        { "word": "Mzyan", "transliteration": "Mzyan", "translation": "Good/Fine", "arabic": "مزيان" },
+        { "word": "La", "transliteration": "La", "translation": "No", "arabic": "لا" },
+        { "word": "Naam", "transliteration": "Naam", "translation": "Yes", "arabic": "نعم" },
+        { "word": "Besh", "transliteration": "Besh", "translation": "What/For", "arabic": "باش" }
+      ],
+      "sentences": [
+        "Labas? - Mzyan, Allah yhbar",
+        "Kifash halik?",
+        "Mzyan bhal lakh"
+      ],
+      "exercises": []
+    },
+    "difficulty": "beginner",
+    "duration": 15,
+    "tags": ["phrases", "conversation"],
+    "topic": "phrases"
+  },
+  {
+    "id": "lesson_004",
+    "title": "Family Members",
+    "description": "Learn words for family members in Darija",
+    "content": {
+      "vocabulary": [
+        { "word": "Baba", "transliteration": "Baba", "translation": "Father", "arabic": "بابا" },
+        { "word": "Mama", "transliteration": "Mama", "translation": "Mother", "arabic": "ماما" },
+        { "word": "Weld", "transliteration": "Weld", "translation": "Son", "arabic": "ولد" },
+        { "word": "Bent", "transliteration": "Bent", "translation": "Daughter", "arabic": "بنت" },
+        { "word": "Khu", "transliteration": "Khu", "translation": "Brother", "arabic": "خو" },
+        { "word": "Ukht", "transliteration": "Ukht", "translation": "Sister", "arabic": "اخت" }
+      ],
+      "sentences": [
+        "Hada baba dyali",
+        "Hadi mama dyali",
+        "Waldi weldi"
+      ],
+      "exercises": []
+    },
+    "difficulty": "beginner",
+    "duration": 20,
+    "tags": ["family", "vocabulary"],
+    "topic": "family"
+  },
+  {
+    "id": "lesson_005",
+    "title": "Food & Drinks",
+    "description": "Essential vocabulary for ordering food and drinks",
+    "content": {
+      "vocabulary": [
+        { "word": "Lkhobz", "transliteration": "Lkhobz", "translation": "Bread", "arabic": "الخبز" },
+        { "word": "Lma", "transliteration": "Lma", "translation": "Water", "arabic": "لما" },
+        { "word": "Atay", "transliteration": "Atay", "translation": "Tea", "arabic": "أطاي" },
+        { "word": "Lahm", "transliteration": "Lahm", "translation": "Meat", "arabic": "لحم" },
+        { "word": "Samak", "transliteration": "Samak", "translation": "Fish", "arabic": "سمك" },
+        { "word": "Khdra", "transliteration": "Khdra", "translation": "Vegetables", "arabic": "خضرة" }
+      ],
+      "sentences": [
+        "Bghit lma",
+        "Atay bnan3a",
+        "Lahm bd"
+      ],
+      "exercises": []
+    },
+    "difficulty": "intermediate",
+    "duration": 25,
+    "tags": ["food", "vocabulary"],
+    "topic": "food"
+  }
+]
