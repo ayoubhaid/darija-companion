@@ -63,25 +63,33 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 bg-gray-50 dark:bg-slate-900">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-zinc-950 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-dots opacity-30" />
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }} />
+      
+      <div className="relative max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl shadow-glow-md mb-6">
+            <span className="text-white font-bold text-2xl">د</span>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">
             Create Your Account
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-zinc-400">
             Start learning Moroccan Darija today - it&apos;s free!
           </p>
         </div>
 
-        <Card className="p-8">
+        <Card variant="glass" padding="lg" className="animate-fade-in-up">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               type="text"
               label="Full Name"
@@ -122,23 +130,23 @@ export default function SignupPage() {
               required
             />
 
-            <Button type="submit" className="w-full" loading={loading}>
+            <Button type="submit" className="w-full" loading={loading} size="lg">
               Create Account
             </Button>
           </form>
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-slate-600"></div>
+              <div className="w-full border-t border-zinc-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-slate-800 text-gray-500">Or continue with</span>
+              <span className="px-4 bg-zinc-900 text-zinc-500">Or continue with</span>
             </div>
           </div>
 
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             className="w-full"
             onClick={handleGoogleSignUp}
             disabled={loading}
@@ -153,18 +161,18 @@ export default function SignupPage() {
           </Button>
         </Card>
 
-        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-8 text-center text-sm text-zinc-400">
           Already have an account?{' '}
-          <Link href="/login" className="text-primary-500 hover:text-primary-600 font-medium">
+          <Link href="/login" className="text-primary hover:text-primary-400 font-medium">
             Sign in
           </Link>
         </p>
 
-        <p className="mt-4 text-center text-xs text-gray-500">
+        <p className="mt-4 text-center text-xs text-zinc-500">
           By signing up, you agree to our{' '}
-          <Link href="/terms" className="text-primary-500 hover:underline">Terms of Service</Link>
+          <Link href="/terms" className="text-primary hover:underline">Terms</Link>
           {' '}and{' '}
-          <Link href="/privacy" className="text-primary-500 hover:underline">Privacy Policy</Link>
+          <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
         </p>
       </div>
     </div>

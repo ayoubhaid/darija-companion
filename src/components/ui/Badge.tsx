@@ -9,13 +9,13 @@ interface BadgeProps {
 
 export default function Badge({ children, variant = 'default', size = 'md', className = '' }: BadgeProps) {
   const variants = {
-    default: 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-300',
-    primary: 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200',
-    secondary: 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200',
-    accent: 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200',
-    success: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    warning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-    danger: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+    default: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+    primary: 'bg-primary/10 text-primary-700 dark:text-primary-300 border border-primary/20',
+    secondary: 'bg-zinc-800 text-zinc-300 dark:bg-zinc-700 dark:text-zinc-200',
+    accent: 'bg-accent/10 text-accent-700 dark:text-accent-300 border border-accent/20',
+    success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+    warning: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20',
+    danger: 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20',
   };
 
   const sizes = {

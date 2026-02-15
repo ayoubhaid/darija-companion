@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   Settings,
-  BarChart3
+  BarChart3,
+  ChevronLeft
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -30,7 +31,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const { user, userProfile, loading } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !userProfile?.isAdmin)) {
@@ -40,8 +42,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent"></div>
       </div>
     );
   }
@@ -51,39 +53,48 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
+      {mobileOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-zinc-950/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside className={clsx(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-secondary-500 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        "fixed top-0 left-0 z-50 h-screen bg-zinc-900 dark:bg-zinc-950 border-r border-zinc-800/60 transition-all duration-300 ease-in-out",
+        sidebarOpen ? "w-64" : "w-20",
+        mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-4 bg-secondary-600">
-            <Link href="/admin" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+          <div className="flex items-center justify-between h-16 px-4 border-b border-zinc-800/60">
+            <Link href="/admin" className="flex items-center space-x-3 group">
+              <div className="w-9 h-9 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-glow-sm transition-shadow">
                 <span className="text-white font-bold text-lg">د</span>
               </div>
-              <span className="text-white font-bold text-lg">Admin</span>
+              {sidebarOpen && (
+                <span className="text-white font-bold text-lg whitespace-nowrap">Admin</span>
+              )}
             </Link>
             <button 
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-white"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="hidden lg:flex p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
             >
-              <X className="w-6 h-6" />
+              <ChevronLeft className={clsx("w-5 h-5 transition-transform duration-300", !sidebarOpen && "rotate-180")} />
+            </button>
+            <button 
+              onClick={() => setMobileOpen(false)}
+              className="lg:hidden p-1.5 rounded-lg text-zinc-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
             {adminNavigation.map((item) => {
               const isActive = pathname === item.href || 
                 (item.href !== '/admin' && pathname.startsWith(item.href));
@@ -91,64 +102,85 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={() => setMobileOpen(false)}
                   className={clsx(
-                    "flex items-center px-4 py-3 rounded-lg transition-colors",
+                    "flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group",
                     isActive 
-                      ? "bg-primary-500 text-white" 
-                      : "text-secondary-100 hover:bg-secondary-400"
+                      ? "bg-primary/10 text-primary shadow-sm" 
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
                   )}
-                  onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon className="w-5 h-5 mr-3" />
-                  {item.name}
+                  <item.icon className={clsx("w-5 h-5 flex-shrink-0", isActive && "text-primary")} />
+                  {sidebarOpen && (
+                    <span className="ml-3 font-medium whitespace-nowrap">{item.name}</span>
+                  )}
+                  {isActive && sidebarOpen && (
+                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-glow-sm" />
+                  )}
                 </Link>
               );
             })}
           </nav>
 
           {/* User info and logout */}
-          <div className="p-4 border-t border-secondary-400">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
-                <span className="text-white font-medium">
+          <div className="p-3 border-t border-zinc-800/60">
+            <div className={clsx("flex items-center", sidebarOpen ? "mb-3" : "justify-center mb-3")}>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+                <span className="text-white font-medium text-sm">
                   {(user.displayName || user.email || 'A')[0].toUpperCase()}
                 </span>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-white">{user.displayName || 'Admin'}</p>
-                <p className="text-xs text-secondary-200">{user.email}</p>
-              </div>
+              {sidebarOpen && (
+                <div className="ml-3 overflow-hidden">
+                  <p className="text-sm font-medium text-white truncate">{user.displayName || 'Admin'}</p>
+                  <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+                </div>
+              )}
             </div>
             <Link
               href="/"
-              className="flex items-center w-full px-4 py-2 text-secondary-100 hover:bg-secondary-400 rounded-lg transition-colors"
+              className={clsx(
+                "flex items-center w-full px-3 py-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors",
+                !sidebarOpen && "justify-center"
+              )}
             >
-              <LogOut className="w-5 h-5 mr-3" />
-              Back to App
+              <LogOut className="w-5 h-5" />
+              {sidebarOpen && <span className="ml-3 font-medium">Back to App</span>}
             </Link>
           </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <div className="lg:ml-0">
+      <div className={clsx(
+        "transition-all duration-300",
+        sidebarOpen ? "lg:ml-64" : "lg:ml-20"
+      )}>
         {/* Top bar */}
-        <header className="bg-white shadow-sm h-16 flex items-center justify-between px-4 lg:px-8">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
+        <header className="sticky top-0 z-30 h-16 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-lg border-b border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-between px-4 lg:px-8">
           <div className="flex items-center space-x-4">
-            <Link href="/admin/settings" className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden p-2 rounded-xl text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="hidden lg:flex p-2 rounded-xl text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Link href="/admin/settings" className="p-2 rounded-xl text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors">
               <Settings className="w-5 h-5" />
             </Link>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-8">
+        <main className="p-4 lg:p-6">
           {children}
         </main>
       </div>

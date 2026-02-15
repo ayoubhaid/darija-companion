@@ -23,6 +23,12 @@ const difficultyColors = {
   advanced: 'danger',
 } as const;
 
+const difficultyGradients = {
+  beginner: 'from-emerald-500 to-teal-600',
+  intermediate: 'from-yellow-500 to-orange-500',
+  advanced: 'from-red-500 to-rose-600',
+} as const;
+
 export default function LessonsPage() {
   const { user, loading: authLoading } = useAuth();
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -48,8 +54,8 @@ export default function LessonsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent"></div>
       </div>
     );
   }
@@ -59,26 +65,26 @@ export default function LessonsPage() {
     : lessons.filter(l => l.difficulty === filter);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
             Lessons
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-zinc-600 dark:text-zinc-400">
             Master Moroccan Darija with our structured lessons
           </p>
         </div>
 
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
           {['all', 'beginner', 'intermediate', 'advanced'].map((level) => (
             <button
               key={level}
               onClick={() => setFilter(level)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                 filter === level
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                  ? 'bg-primary text-white shadow-glow-sm'
+                  : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700'
               }`}
             >
               {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -87,38 +93,42 @@ export default function LessonsPage() {
         </div>
 
         {filteredLessons.length === 0 ? (
-          <div className="text-center py-12">
-            <BookOpenIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-slate-600 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">No lessons found</p>
+          <div className="text-center py-20">
+            <div className="w-20 h-20 mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-4">
+              <BookOpenIcon className="w-10 h-10 text-zinc-400" />
+            </div>
+            <p className="text-zinc-500">No lessons found</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredLessons.map((lesson) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredLessons.map((lesson, index) => (
               <Link key={lesson.id} href={`/lessons/${lesson.id}`}>
-                <Card variant="interactive" className="h-full">
-                  <div className="flex items-start justify-between mb-3">
-                    <Badge variant={difficultyColors[lesson.difficulty]}>
+                <Card variant="interactive" className="h-full group" style={{ animationDelay: `${index * 0.05}s` }}>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`px-3 py-1 rounded-full bg-gradient-to-r ${difficultyGradients[lesson.difficulty]} text-white text-xs font-medium shadow-md`}>
                       {lesson.difficulty}
-                    </Badge>
-                    <div className="flex items-center text-sm text-gray-500">
+                    </div>
+                    <div className="flex items-center text-sm text-zinc-500">
                       <ClockIcon className="w-4 h-4 mr-1" />
                       {lesson.duration || lesson.estimatedDuration || 15} min
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2 group-hover:text-primary transition-colors">
                     {lesson.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+                  <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4 line-clamp-2">
                     {lesson.description}
                   </p>
 
-                  <div className="flex items-center justify-between mt-auto">
-                    <div className="flex items-center text-sm text-gray-500">
+                  <div className="flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                    <div className="flex items-center text-sm text-zinc-500">
                       <BookOpenIcon className="w-4 h-4 mr-1" />
                       {lesson.content?.vocabulary?.length || 0} words
                     </div>
-                    <ChevronRightIcon className="w-5 h-5 text-primary-500" />
+                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-200">
+                      <ChevronRightIcon className="w-4 h-4" />
+                    </div>
                   </div>
                 </Card>
               </Link>
