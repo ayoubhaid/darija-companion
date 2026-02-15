@@ -227,7 +227,6 @@ export default function VocabularyPage() {
             Still Learning
           </Button>
           <Button
-            variant="success"
             onClick={handleKnown}
             className="flex items-center bg-green-500 hover:bg-green-600"
           >
