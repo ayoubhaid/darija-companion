@@ -25,8 +25,6 @@ export default function LessonDetailPage() {
   const { user, userProfile } = useAuth();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   const lessonId = params.id as string;
 
@@ -60,24 +58,22 @@ export default function LessonDetailPage() {
     if (audioUrl) {
       const audio = new Audio(audioUrl);
       audio.play();
-      setIsPlaying(true);
-      audio.onended = () => setIsPlaying(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 pt-20">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent"></div>
       </div>
     );
   }
 
   if (!lesson) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 pt-20">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Lesson not found</h2>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">Lesson not found</h2>
           <Link href="/lessons">
             <Button variant="outline">Back to Lessons</Button>
           </Link>
@@ -91,12 +87,12 @@ export default function LessonDetailPage() {
   const isCompleted = userProfile?.completedLessons?.includes(lessonId);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Link 
             href="/lessons" 
-            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-primary-500"
+            className="inline-flex items-center text-zinc-600 dark:text-zinc-400 hover:text-primary"
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
             Back to Lessons
@@ -116,69 +112,97 @@ export default function LessonDetailPage() {
             )}
           </div>
           
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
             {lesson.title}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-zinc-600 dark:text-zinc-400">
             {lesson.description}
           </p>
         </div>
 
         <div className="space-y-6">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-                <BookOpenIcon className="w-5 h-5 mr-2" />
-                Vocabulary
-              </h2>
-              <span className="text-sm text-gray-500">{vocabulary.length} words</span>
-            </div>
+          {/* Rich Text Content */}
+          {lesson.contentHtml && (
+            <Card padding="lg">
+              <div 
+                className="prose prose-zinc dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: lesson.contentHtml }}
+              />
+            </Card>
+          )}
 
-            <div className="grid md:grid-cols-2 gap-4">
-              {vocabulary.map((item, index) => (
-                <div 
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg"
-                >
-                  <div>
-                    <div className="font-semibold text-gray-900 dark:text-white">
-                      {item.word}
+          {/* Vocabulary Section */}
+          {vocabulary.length > 0 && (
+            <Card padding="lg">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-zinc-900 dark:text-white flex items-center">
+                  <BookOpenIcon className="w-5 h-5 mr-2" />
+                  Vocabulary
+                </h2>
+                <span className="text-sm text-zinc-500">{vocabulary.length} words</span>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {vocabulary.map((item, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800 rounded-xl"
+                  >
+                    <div>
+                      <div className="font-semibold text-zinc-900 dark:text-white">
+                        {item.word}
+                      </div>
+                      <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {item.transliteration}
+                      </div>
+                      <div className="text-sm text-primary">
+                        {item.translation}
+                      </div>
+                      {item.arabic && (
+                        <div className="text-lg arabic-text text-zinc-700 dark:text-zinc-300" dir="rtl">
+                          {item.arabic}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {item.transliteration}
-                    </div>
-                    <div className="text-sm text-primary-500">
-                      {item.translation}
-                    </div>
+                    {item.audioUrl && (
+                      <button
+                        onClick={() => playAudio(item.audioUrl)}
+                        className="p-2 text-primary hover:bg-primary/10 rounded-lg"
+                      >
+                        <SpeakerWaveIcon className="w-5 h-5" />
+                      </button>
+                    )}
                   </div>
-                  {item.audioUrl && (
-                    <button
-                      onClick={() => playAudio(item.audioUrl)}
-                      className="p-2 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg"
-                    >
-                      <SpeakerWaveIcon className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Card>
+                ))}
+              </div>
+            </Card>
+          )}
 
+          {/* Sentences Section */}
           {sentences.length > 0 && (
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            <Card padding="lg">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
                 Sentences
               </h2>
               <div className="space-y-3">
                 {sentences.map((sentence, index) => (
                   <div 
                     key={index}
-                    className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg text-gray-900 dark:text-white"
+                    className="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-xl text-zinc-900 dark:text-white"
                   >
                     {sentence}
                   </div>
                 ))}
               </div>
+            </Card>
+          )}
+
+          {/* If no content at all */}
+          {!lesson.contentHtml && vocabulary.length === 0 && sentences.length === 0 && (
+            <Card padding="lg" className="text-center py-12">
+              <BookOpenIcon className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
+              <p className="text-zinc-500">No content available for this lesson yet.</p>
+              <p className="text-sm text-zinc-400 mt-2">The admin is still working on this lesson.</p>
             </Card>
           )}
 
