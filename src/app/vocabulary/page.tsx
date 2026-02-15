@@ -68,7 +68,7 @@ export default function VocabularyPage() {
 
   const handleKnown = () => {
     if (currentCard) {
-      setKnownWords(new Set([...knownWords, currentCard.id]));
+      setKnownWords(new Set(Array.from(knownWords).concat(currentCard.id)));
       handleNext();
     }
   };
