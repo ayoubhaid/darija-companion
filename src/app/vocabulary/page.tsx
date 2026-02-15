@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import { Vocabulary } from '@/types';
+import { VocabularyItem } from '@/types';
 import { getAllVocabulary } from '@/lib/firestore';
 import { 
   ChevronLeftIcon, 
@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function VocabularyPage() {
-  const [vocabulary, setVocabulary] = useState<Vocabulary[]>([]);
+  const [vocabulary, setVocabulary] = useState<VocabularyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
