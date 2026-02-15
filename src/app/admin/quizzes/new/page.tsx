@@ -68,7 +68,7 @@ export default function NewQuizPage() {
     try {
       const quizData = {
         ...formData,
-        type: 'mixed',
+        type: 'mixed' as const,
         timeLimit: 300,
         isAdaptive: false,
         totalQuestions: formData.questions.length,

@@ -98,14 +98,14 @@ export default function QuizFormPage() {
     try {
       const quizData = {
         ...formData,
-        type: 'mixed',
+        type: 'mixed' as const,
         timeLimit: 300,
         isAdaptive: false,
         totalQuestions: formData.questions.length,
       };
 
       if (isEditing) {
-        await updateQuiz(quizId, quizData, user.uid, user.displayName || 'Admin');
+        await updateQuiz(quizId, quizData as any, user.uid, user.displayName || 'Admin');
       } else {
         await createQuiz(quizData as any, user.uid, user.displayName || 'Admin');
       }
