@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin(auth) {
+      return auth != null && 
+        get(/databases/$(database)/documents/users/$(auth.uid)).data.isAdmin == true;
+    }
+    
+    // Helper function to check if authenticated
+    function isAuthenticated(auth) {
+      return auth != null;
+    }
+    
+    // LESSONS - Public read, Admin write
+    match /lessons/{lessonId} {
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated(request.auth) && isAdmin(request.auth);
+    }
+    
+    // VOCABULARY - Public read, Admin write
+    match /vocabulary/{vocabId} {
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated(request.auth) && isAdmin(request.auth);
+    }
+    
+    // QUIZZES - Public read, Admin write
+    match /quizzes/{quizId} {
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated(request.auth) && isAdmin(request.auth);
+    }
+    
+    // USERS - Own read/write, Admin full access
+    match /users/{userId} {
+      allow read: if isAuthenticated(request.auth) && 
+        (request.auth.uid == userId || isAdmin(request.auth));
+      allow create: if true;
+      allow update: if isAuthenticated(request.auth) && 
+        (request.auth.uid == userId || isAdmin(request.auth));
+      allow delete: if isAuthenticated(request.auth) && isAdmin(request.auth);
+    }
+    
+    // AUDIT LOGS - Admin only
+    match /auditLogs/{logId} {
+      allow read, write: if isAuthenticated(request.auth) && isAdmin(request.auth);
+    }
+    
+    // USER QUIZ RESULTS - User own only
+    match /users/{userId}/quizResults/{resultId} {
+      allow read: if isAuthenticated(request.auth) && 
+        (request.auth.uid == userId || isAdmin(request.auth));
+      allow create: if isAuthenticated(request.auth) && request.auth.uid == userId;
+    }
+  }
+}

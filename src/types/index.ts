@@ -10,6 +10,10 @@ export interface VocabularyItem {
   imageUrl?: string;
   example?: string;
   exampleTranslation?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Exercise {
@@ -34,6 +38,7 @@ export interface Lesson {
   title: string;
   description: string;
   content: LessonContent;
+  contentHtml?: string; // Rich text HTML content
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration: number;
   tags: string[];
@@ -41,19 +46,15 @@ export interface Lesson {
   topic: string;
   estimatedDuration?: number;
   isPremium?: boolean;
-  metadata?: {
-    createdAt: string;
-    updatedAt: string;
-    viewCount: number;
-    rating: number;
-    ratingCount: number;
-    isPremium: boolean;
-  };
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Question {
   question: string;
-  type: 'multipleChoice' | 'fillInTheBlank' | 'matching';
+  type: 'multipleChoice' | 'fillInTheBlank' | 'matching' | 'trueFalse';
   options?: string[];
   correctAnswer: string;
   correctAnswerIndex?: number;
@@ -61,6 +62,7 @@ export interface Question {
   explanation: string;
   audioUrl?: string;
   imageUrl?: string;
+  matchingPairs?: { left: string; right: string }[]; // For matching type
 }
 
 export interface Quiz {
@@ -75,15 +77,10 @@ export interface Quiz {
   isAdaptive: boolean;
   difficulty: string;
   xpReward: number;
-  metadata?: {
-    difficulty: string;
-    tags: string[];
-    createdAt: string;
-    updatedAt: string;
-    attemptCount: number;
-    averageScore: number;
-    completionRate: number;
-  };
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UserProfile {
@@ -100,6 +97,7 @@ export interface UserProfile {
   totalXP: number;
   lastActive: string;
   createdAt: string;
+  isAdmin?: boolean;
   achievements?: string[];
   preferences?: {
     showTransliteration: boolean;
@@ -122,4 +120,23 @@ export interface QuizResult {
   totalPoints: number;
   completedAt: string;
   timeTaken: number;
+}
+
+export interface AuditLog {
+  id: string;
+  action: 'create' | 'update' | 'delete';
+  collection: 'lessons' | 'vocabulary' | 'quizzes' | 'users';
+  documentId: string;
+  documentTitle: string;
+  userId: string;
+  userName: string;
+  timestamp: string;
+  changes?: Record<string, { old: unknown; new: unknown }>;
+}
+
+export interface Stats {
+  totalLessons: number;
+  totalVocabulary: number;
+  totalQuizzes: number;
+  totalUsers: number;
 }

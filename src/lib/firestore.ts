@@ -274,3 +274,314 @@ export const recordQuizResult = async (
 export const calculateLevel = (xp: number): number => {
   return Math.floor(xp / 100) + 1;
 };
+
+// ============ ADMIN FUNCTIONS ============
+
+// LESSONS
+export const createLesson = async (lesson: Omit<Lesson, 'id'>, userId: string, userName: string): Promise<string> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot create lessons in mock data mode');
+  }
+  
+  const { doc, setDoc, serverTimestamp, collection } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const lessonRef = doc(collection(db, collections.lessons));
+  
+  const lessonData = {
+    ...lesson,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    createdBy: userId,
+    updatedBy: userId,
+  };
+  
+  await setDoc(lessonRef, lessonData);
+  
+  // Create audit log
+  await createAuditLog('create', 'lessons', lessonRef.id, lesson.title, userId, userName);
+  
+  return lessonRef.id;
+};
+
+export const updateLesson = async (id: string, lesson: Partial<Lesson>, userId: string, userName: string): Promise<void> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot update lessons in mock data mode');
+  }
+  
+  const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const lessonRef = doc(db, collections.lessons, id);
+  
+  const updates = {
+    ...lesson,
+    updatedAt: serverTimestamp(),
+    updatedBy: userId,
+  };
+  
+  await updateDoc(lessonRef, updates);
+  
+  // Create audit log
+  await createAuditLog('update', 'lessons', id, lesson.title || id, userId, userName);
+};
+
+export const deleteLesson = async (id: string, title: string, userId: string, userName: string): Promise<void> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot delete lessons in mock data mode');
+  }
+  
+  const { deleteDoc } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const { doc: docFn } = await import('firebase/firestore');
+  const lessonRef = docFn(db, collections.lessons, id);
+  
+  await deleteDoc(lessonRef);
+  
+  // Create audit log
+  await createAuditLog('delete', 'lessons', id, title, userId, userName);
+};
+
+// VOCABULARY
+export const createVocabulary = async (vocab: Omit<VocabularyItem, 'id'>, userId: string, userName: string): Promise<string> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot create vocabulary in mock data mode');
+  }
+  
+  const { doc, setDoc, serverTimestamp, collection } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const vocabRef = doc(collection(db, collections.vocabulary));
+  
+  const vocabData = {
+    ...vocab,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    createdBy: userId,
+    updatedBy: userId,
+  };
+  
+  await setDoc(vocabRef, vocabData);
+  
+  await createAuditLog('create', 'vocabulary', vocabRef.id, vocab.word, userId, userName);
+  
+  return vocabRef.id;
+};
+
+export const updateVocabulary = async (id: string, vocab: Partial<VocabularyItem>, userId: string, userName: string): Promise<void> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot update vocabulary in mock data mode');
+  }
+  
+  const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const vocabRef = doc(db, collections.vocabulary, id);
+  
+  const updates = {
+    ...vocab,
+    updatedAt: serverTimestamp(),
+    updatedBy: userId,
+  };
+  
+  await updateDoc(vocabRef, updates);
+  
+  await createAuditLog('update', 'vocabulary', id, vocab.word || id, userId, userName);
+};
+
+export const deleteVocabulary = async (id: string, word: string, userId: string, userName: string): Promise<void> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot delete vocabulary in mock data mode');
+  }
+  
+  const { deleteDoc } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const { doc: docFn } = await import('firebase/firestore');
+  const vocabRef = docFn(db, collections.vocabulary, id);
+  
+  await deleteDoc(vocabRef);
+  
+  await createAuditLog('delete', 'vocabulary', id, word, userId, userName);
+};
+
+export const bulkCreateVocabulary = async (vocabList: Omit<VocabularyItem, 'id'>[], userId: string, userName: string): Promise<number> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot bulk create vocabulary in mock data mode');
+  }
+  
+  const { doc, setDoc, serverTimestamp, collection } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  
+  let count = 0;
+  for (const vocab of vocabList) {
+    const vocabRef = doc(collection(db, collections.vocabulary));
+    await setDoc(vocabRef, {
+      ...vocab,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      createdBy: userId,
+      updatedBy: userId,
+    });
+    count++;
+  }
+  
+  await createAuditLog('create', 'vocabulary', 'bulk', `${count} vocabulary words`, userId, userName);
+  
+  return count;
+};
+
+// QUIZZES
+export const createQuiz = async (quiz: Omit<Quiz, 'id'>, userId: string, userName: string): Promise<string> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot create quizzes in mock data mode');
+  }
+  
+  const { doc, setDoc, serverTimestamp, collection } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const quizRef = doc(collection(db, collections.quizzes));
+  
+  const quizData = {
+    ...quiz,
+    totalQuestions: quiz.questions?.length || 0,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    createdBy: userId,
+    updatedBy: userId,
+  };
+  
+  await setDoc(quizRef, quizData);
+  
+  await createAuditLog('create', 'quizzes', quizRef.id, quiz.title, userId, userName);
+  
+  return quizRef.id;
+};
+
+export const updateQuiz = async (id: string, quiz: Partial<Quiz>, userId: string, userName: string): Promise<void> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot update quizzes in mock data mode');
+  }
+  
+  const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const quizRef = doc(db, collections.quizzes, id);
+  
+  const updates = {
+    ...quiz,
+    totalQuestions: quiz.questions?.length,
+    updatedAt: serverTimestamp(),
+    updatedBy: userId,
+  };
+  
+  await updateDoc(quizRef, updates);
+  
+  await createAuditLog('update', 'quizzes', id, quiz.title || id, userId, userName);
+};
+
+export const deleteQuiz = async (id: string, title: string, userId: string, userName: string): Promise<void> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot delete quizzes in mock data mode');
+  }
+  
+  const { deleteDoc } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const { doc: docFn } = await import('firebase/firestore');
+  const quizRef = docFn(db, collections.quizzes, id);
+  
+  await deleteDoc(quizRef);
+  
+  await createAuditLog('delete', 'quizzes', id, title, userId, userName);
+};
+
+// USERS
+export const getAllUsers = async (): Promise<UserProfile[]> => {
+  if (USE_MOCK_DATA) {
+    return [];
+  }
+  
+  try {
+    const { collection, getDocs } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
+    const usersRef = collection(db, collections.users);
+    const snapshot = await getDocs(usersRef);
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as UserProfile));
+  } catch (error) {
+    console.warn('Firebase error:', error);
+    return [];
+  }
+};
+
+export const setUserAdminStatus = async (userId: string, isAdmin: boolean, adminUserId: string, adminUserName: string): Promise<void> => {
+  if (USE_MOCK_DATA) {
+    throw new Error('Cannot update user admin status in mock data mode');
+  }
+  
+  const { doc, updateDoc } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+  const userRef = doc(db, collections.users, userId);
+  
+  await updateDoc(userRef, { isAdmin });
+  
+  await createAuditLog('update', 'users', userId, `Set admin to ${isAdmin}`, adminUserId, adminUserName);
+};
+
+// AUDIT LOG
+export const createAuditLog = async (
+  action: 'create' | 'update' | 'delete',
+  collection: 'lessons' | 'vocabulary' | 'quizzes' | 'users',
+  documentId: string,
+  documentTitle: string,
+  userId: string,
+  userName: string
+): Promise<void> => {
+  if (USE_MOCK_DATA) {
+    return;
+  }
+  
+  try {
+    const { collection: coll, addDoc, serverTimestamp } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
+    const auditRef = coll(db, 'auditLogs');
+    
+    await addDoc(auditRef, {
+      action,
+      collection,
+      documentId,
+      documentTitle,
+      userId,
+      userName,
+      timestamp: serverTimestamp(),
+    });
+  } catch (error) {
+    console.warn('Error creating audit log:', error);
+  }
+};
+
+// STATS
+export const getStats = async (): Promise<{ totalLessons: number; totalVocabulary: number; totalQuizzes: number; totalUsers: number }> => {
+  if (USE_MOCK_DATA) {
+    return {
+      totalLessons: lessonsData.length,
+      totalVocabulary: vocabularyData.length,
+      totalQuizzes: quizzesData.length,
+      totalUsers: 0,
+    };
+  }
+  
+  try {
+    const { collection, getDocs } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
+    
+    const [lessonsSnap, vocabSnap, quizzesSnap, usersSnap] = await Promise.all([
+      getDocs(collection(db, collections.lessons)),
+      getDocs(collection(db, collections.vocabulary)),
+      getDocs(collection(db, collections.quizzes)),
+      getDocs(collection(db, collections.users)),
+    ]);
+    
+    return {
+      totalLessons: lessonsSnap.size,
+      totalVocabulary: vocabSnap.size,
+      totalQuizzes: quizzesSnap.size,
+      totalUsers: usersSnap.size,
+    };
+  } catch (error) {
+    console.warn('Error getting stats:', error);
+    return { totalLessons: 0, totalVocabulary: 0, totalQuizzes: 0, totalUsers: 0 };
+  }
+};
