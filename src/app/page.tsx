@@ -250,6 +250,13 @@ function UserDashboard({ userProfile }: { userProfile: any }) {
 
   const quickActions = [
     { 
+      title: 'Practice', 
+      description: 'Daily vocabulary',
+      href: '/practice', 
+      icon: SparklesIcon,
+      gradient: 'from-violet-500 to-purple-600'
+    },
+    { 
       title: 'Lessons', 
       description: `${lessons.length} available`,
       href: '/lessons', 

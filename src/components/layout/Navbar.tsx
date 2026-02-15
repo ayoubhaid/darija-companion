@@ -16,11 +16,13 @@ import {
   UserIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Lessons', href: '/lessons', icon: BookOpenIcon },
   { name: 'Vocabulary', href: '/vocabulary', icon: AcademicCapIcon },
+  { name: 'Practice', href: '/practice', icon: SparklesIcon },
   { name: 'Quizzes', href: '/quizzes', icon: FireIcon },
 ];
 

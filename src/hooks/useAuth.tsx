@@ -96,6 +96,10 @@ interface UserProfile {
   createdAt: string;
   isAdmin?: boolean;
   achievements?: string[];
+  skillLevel?: number;
+  accuracyRate?: number;
+  quizzesCompleted?: number;
+  lessonsCompleted?: number;
   preferences?: {
     showTransliteration: boolean;
     showArabic: boolean;
