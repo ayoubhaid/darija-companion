@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import Card from '@/components/ui/Card';
@@ -14,7 +14,8 @@ import {
   BookOpenIcon, 
   ClockIcon, 
   ChevronRightIcon,
-  FireIcon 
+  FireIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 
 const difficultyColors = {
@@ -34,6 +35,7 @@ export default function LessonsPage() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchLessons = async () => {
@@ -52,6 +54,24 @@ export default function LessonsPage() {
     }
   }, [authLoading]);
 
+  const filteredLessons = useMemo(() => {
+    let filtered = filter === 'all' 
+      ? lessons 
+      : lessons.filter(l => l.difficulty === filter);
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(l => 
+        l.title.toLowerCase().includes(query) ||
+        l.description.toLowerCase().includes(query) ||
+        l.topic?.toLowerCase().includes(query) ||
+        l.tags?.some(t => t.toLowerCase().includes(query))
+      );
+    }
+    
+    return filtered;
+  }, [lessons, filter, searchQuery]);
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
@@ -59,10 +79,6 @@ export default function LessonsPage() {
       </div>
     );
   }
-
-  const filteredLessons = filter === 'all' 
-    ? lessons 
-    : lessons.filter(l => l.difficulty === filter);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
@@ -74,6 +90,18 @@ export default function LessonsPage() {
           <p className="text-zinc-600 dark:text-zinc-400">
             Master Moroccan Darija with our structured lessons
           </p>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-6">
+          <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Search lessons..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+          />
         </div>
 
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">

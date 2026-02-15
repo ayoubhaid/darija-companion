@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -15,6 +15,8 @@ import {
   SpeakerWaveIcon,
   CheckIcon,
   XMarkIcon,
+  MagnifyingGlassIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/outline';
 
 export default function VocabularyPage() {
@@ -23,7 +25,9 @@ export default function VocabularyPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [knownWords, setKnownWords] = useState<Set<string>>(new Set());
+  const [learningWords, setLearningWords] = useState<Set<string>>(new Set());
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchVocabulary = async () => {
@@ -40,11 +44,24 @@ export default function VocabularyPage() {
     fetchVocabulary();
   }, []);
 
-  const categories = Array.from(new Set(vocabulary.map(v => v.category)));
+  const categories = useMemo(() => Array.from(new Set(vocabulary.map(v => v.category))), [vocabulary]);
   
-  const filteredVocab = categoryFilter === 'all' 
-    ? vocabulary 
-    : vocabulary.filter(v => v.category === categoryFilter);
+  const filteredVocab = useMemo(() => {
+    let filtered = categoryFilter === 'all' 
+      ? vocabulary 
+      : vocabulary.filter(v => v.category === categoryFilter);
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(v => 
+        v.word.toLowerCase().includes(query) ||
+        v.translation.toLowerCase().includes(query) ||
+        (v.transliteration && v.transliteration.toLowerCase().includes(query))
+      );
+    }
+    
+    return filtered;
+  }, [vocabulary, categoryFilter, searchQuery]);
 
   const currentCard = filteredVocab[currentIndex];
 
@@ -69,13 +86,16 @@ export default function VocabularyPage() {
     }
   };
 
-  const handleUnknown = () => {
-    handleNext();
+  const handleLearning = () => {
+    if (currentCard) {
+      setLearningWords(new Set(Array.from(learningWords).concat(currentCard.id)));
+      handleNext();
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 pt-20">
         <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent"></div>
       </div>
     );
@@ -101,10 +121,23 @@ export default function VocabularyPage() {
             Vocabulary Flashcards
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400">
-            Learn and review Darija vocabulary with spaced repetition
+            Learn and review Darija vocabulary
           </p>
         </div>
 
+        {/* Search */}
+        <div className="relative mb-6">
+          <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Search vocabulary..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+        </div>
+
+        {/* Filters */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           <button
             onClick={() => { setCategoryFilter('all'); setCurrentIndex(0); setIsFlipped(false); }}
@@ -131,21 +164,27 @@ export default function VocabularyPage() {
           ))}
         </div>
 
+        {/* Progress */}
         <div className="mb-6 flex items-center justify-between">
           <span className="text-sm text-zinc-500">
             Card {currentIndex + 1} of {filteredVocab.length}
           </span>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-primary font-medium">
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-emerald-600 font-medium">
               {knownWords.size} known
             </span>
             <span className="text-zinc-300">|</span>
+            <span className="text-sm text-yellow-600 font-medium">
+              {learningWords.size} learning
+            </span>
+            <span className="text-zinc-300">|</span>
             <span className="text-sm text-zinc-500">
-              {filteredVocab.length - knownWords.size} remaining
+              {filteredVocab.length - knownWords.size - learningWords.size} new
             </span>
           </div>
         </div>
 
+        {/* Flashcard */}
         <div className="mb-6">
           <Card 
             variant="interactive"
@@ -197,6 +236,7 @@ export default function VocabularyPage() {
           </Card>
         </div>
 
+        {/* Navigation */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={handlePrev}
@@ -219,13 +259,14 @@ export default function VocabularyPage() {
           </button>
         </div>
 
+        {/* Action Buttons */}
         <div className="flex justify-center gap-4">
           <Button
-            variant="danger"
-            onClick={handleUnknown}
+            variant="outline"
+            onClick={handleLearning}
             className="flex items-center"
           >
-            <XMarkIcon className="w-5 h-5 mr-2" />
+            <BookmarkIcon className="w-5 h-5 mr-2" />
             Still Learning
           </Button>
           <Button

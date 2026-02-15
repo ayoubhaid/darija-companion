@@ -44,6 +44,16 @@ export default function LessonDetailPage() {
     fetchLesson();
   }, [lessonId]);
 
+  const handleStart = async () => {
+    if (!user || !lesson) return;
+    
+    try {
+      await updateUserProgress(user.uid, lessonId, undefined, 0);
+    } catch (error) {
+      console.error('Error starting lesson:', error);
+    }
+  };
+
   const handleComplete = async () => {
     if (!user || !lesson) return;
     
@@ -207,14 +217,25 @@ export default function LessonDetailPage() {
             </Card>
           )}
 
-          {!isCompleted && (
-            <div className="flex justify-end">
-              <Button onClick={handleComplete} className="flex items-center">
-                <CheckCircleIcon className="w-5 h-5 mr-2" />
-                Mark as Complete (+20 XP)
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-end">
+            {!isCompleted && (
+              <>
+                <Button onClick={handleStart} variant="outline" className="flex items-center justify-center">
+                  Start Lesson
+                </Button>
+                <Button onClick={handleComplete} className="flex items-center">
+                  <CheckCircleIcon className="w-5 h-5 mr-2" />
+                  Mark as Complete (+20 XP)
+                </Button>
+              </>
+            )}
+            {isCompleted && (
+              <Button onClick={() => router.push('/lessons')} variant="outline" className="flex items-center justify-center">
+                Back to Lessons
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
