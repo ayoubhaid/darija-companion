@@ -1,17 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
-
-const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-const apiKey = process.env.CLOUDINARY_API_KEY;
-const apiSecret = process.env.CLOUDINARY_API_SECRET;
-
-console.log('Cloudinary config check:', { cloudName, apiKey: apiKey ? 'set' : 'missing', apiSecret: apiSecret ? 'set' : 'missing' });
-
-cloudinary.config({
-  cloud_name: cloudName,
-  api_key: apiKey,
-  api_secret: apiSecret,
-});
 
 export const runtime = 'nodejs';
 
@@ -24,34 +11,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    console.log('Cloudinary config:', {
-      cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY ? 'set' : 'missing',
-      api_secret: process.env.CLOUDINARY_API_SECRET ? 'set' : 'missing',
-    });
-
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'darija-companion/audio',
-          resource_type: 'raw',
-        },
-        (error: unknown, result: unknown) => {
-          if (error) reject(error);
-          else if (result) resolve(result as { secure_url: string });
-          else reject(new Error('No result'));
-        }
-      );
-      uploadStream.end(buffer);
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', new Blob([buffer], { type: file.type }));
+    uploadFormData.append('upload_preset', 'darija-companion-audio');
+    uploadFormData.append('folder', 'darija-companion/audio');
+
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: uploadFormData,
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Cloudinary error: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
     return NextResponse.json({ url: result.secure_url });
   } catch (error) {
-    console.error('Upload error details:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: errorMessage, details: String(error) }, { status: 500 });
+    console.error('Upload error:', error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
