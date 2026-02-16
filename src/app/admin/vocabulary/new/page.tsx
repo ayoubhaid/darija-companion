@@ -72,7 +72,7 @@ export default function NewVocabularyPage() {
           }
         } catch (uploadError) {
           console.error('Audio upload error:', uploadError);
-          alert('Failed to upload audio. Please check storage rules and try again.');
+          alert(`Failed to upload audio: ${uploadError}`);
           setUploading(false);
           return;
         }
