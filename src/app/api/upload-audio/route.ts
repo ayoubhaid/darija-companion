@@ -18,6 +18,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
+    console.log('Cloudinary config:', {
+      cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY ? 'set' : 'missing',
+      api_secret: process.env.CLOUDINARY_API_SECRET ? 'set' : 'missing',
+    });
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -25,7 +31,7 @@ export async function POST(request: NextRequest) {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: 'darija-companion/audio',
-          resource_type: 'video',
+          resource_type: 'raw',
         },
         (error: unknown, result: unknown) => {
           if (error) reject(error);
@@ -39,6 +45,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: result.secure_url });
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
