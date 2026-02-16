@@ -13,14 +13,20 @@ export async function uploadAudioFile(
   }
 
   try {
-    const timestamp = Date.now();
-    const fileName = `${userId}/${timestamp}_${file.name}`;
-    const storageRef = ref(storage, `audio/${fileName}`);
-    
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-    
-    return downloadURL;
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/upload-audio', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+
+    const data = await response.json();
+    return data.url;
   } catch (error) {
     console.error('Error uploading audio:', error);
     throw error;

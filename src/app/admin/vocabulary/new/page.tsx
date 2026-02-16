@@ -65,7 +65,17 @@ export default function NewVocabularyPage() {
 
       if (audioFile) {
         setUploading(true);
-        audioUrl = await uploadAudioFile(audioFile, user.uid);
+        try {
+          audioUrl = await uploadAudioFile(audioFile, user.uid);
+          if (!audioUrl) {
+            throw new Error('Audio upload failed - no URL returned');
+          }
+        } catch (uploadError) {
+          console.error('Audio upload error:', uploadError);
+          alert('Failed to upload audio. Please check storage rules and try again.');
+          setUploading(false);
+          return;
+        }
         setUploading(false);
       }
 
