@@ -22,7 +22,8 @@ export async function uploadAudioFile(
     });
 
     if (!response.ok) {
-      throw new Error('Upload failed');
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.details || 'Upload failed');
     }
 
     const data = await response.json();
