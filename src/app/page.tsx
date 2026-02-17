@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import ZelligeBackground from '@/components/ZelligeBackground';
+import ZelligeBackground from '@/components/ZelijBackground';
 import { getAllLessons, getAllVocabulary, getAllQuizzes } from '@/lib/firestore';
 import { Lesson, Quiz, VocabularyItem } from '@/types';
 import { 
