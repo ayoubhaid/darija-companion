@@ -17,121 +17,115 @@ const CENTER_Y = 110
 
 export default function FloatingCards({ label = "Words you'll learn" }: { label?: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const cardsRef = useRef<{ el: HTMLDivElement; x: number; y: number; targetX: number; targetY: number; vx: number; vy: number }[]>([])
-  const wordsRef = useRef<Word[]>([])
-  const animationRef = useRef<number | undefined>(undefined)
+  const cardsRef = useRef<{ el: HTMLDivElement; x: number }[]>([])
+  const rafRef = useRef<number>(0)
+  const startTimeRef = useRef<number>(Date.now())
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    const fetchWords = async () => {
-      try {
-        const res = await fetch('/api/words')
-        const data = await res.json()
-        wordsRef.current = data.slice(0, 30)
-        initCards()
-      } catch (err) {
-        console.error('Failed to fetch words:', err)
-      }
-    }
-
-    const initCards = () => {
-      const container = containerRef.current
-      if (!container || wordsRef.current.length === 0) return
-
-      container.innerHTML = ''
-      cardsRef.current = []
-
-      wordsRef.current.forEach((word, i) => {
-        const card = document.createElement('div')
-        card.className = 'absolute left-0 top-0 w-[160px] p-3 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 cursor-pointer hover:scale-105 transition-transform'
-        card.innerHTML = `
-          <p class="font-semibold text-zinc-900 text-base">${word.darija}</p>
-          <p class="text-sm text-zinc-500">${word.english}</p>
-        `
-        card.style.opacity = '0'
-        container.appendChild(card)
-
-        cardsRef.current.push({
-          el: card,
-          x: 0,
-          y: 0,
-          targetX: 0,
-          targetY: 0,
-          vx: 0,
-          vy: 0
-        })
+    fetch('/api/words')
+      .then(res => res.json())
+      .then((words: Word[]) => {
+        initCards(container, [...words, ...words, ...words])
       })
-
-      positionCards()
-      animate()
-    }
-
-    const positionCards = () => {
-      const containerWidth = container.offsetWidth
-      const containerHeight = 220
-
-      cardsRef.current.forEach((card, i) => {
-        const col = i % 4
-        const row = Math.floor(i / 4)
-        
-        card.targetX = col * SPACING + (220 - 160) / 2
-        card.targetY = row * 80 + 20
-
-        if (card.targetX > containerWidth - 180) {
-          card.targetX = -1000
-          card.targetY = -1000
-        }
-
-        card.x = card.targetX + (Math.random() - 0.5) * 30
-        card.y = card.targetY + (Math.random() - 0.5) * 20
+      .catch(() => {
+        initCards(container, [...fallback, ...fallback, ...fallback])
       })
-    }
-
-    const animate = () => {
-      const time = performance.now()
-      
-      cardsRef.current.forEach((card, i) => {
-        if (card.targetX < 0) {
-          card.el.style.opacity = '0'
-          return
-        }
-
-        card.el.style.opacity = '1'
-
-        card.x += (card.targetX - card.x) * 0.05
-        card.y += (card.targetY - card.y) * 0.05
-
-        const waveOffset = Math.sin(time * WAVE_FREQUENCY + i * 0.5) * WAVE_AMPLITUDE
-        const y = card.y + waveOffset
-
-        card.el.style.transform = `translate(${card.x}px, ${y}px)`
-      })
-
-      animationRef.current = requestAnimationFrame(animate)
-    }
-
-    fetchWords()
-
-    const handleResize = () => {
-      positionCards()
-    }
-
-    window.addEventListener('resize', handleResize)
 
     return () => {
-      window.removeEventListener('resize', handleResize)
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
+      cancelAnimationFrame(rafRef.current)
+      cardsRef.current.forEach(c => c.el.remove())
     }
   }, [])
 
+  function initCards(container: HTMLDivElement, words: Word[]) {
+    cardsRef.current.forEach(c => c.el.remove())
+    cardsRef.current = []
+
+    words.forEach((word, index) => {
+      const el = document.createElement('div')
+      el.style.position = 'absolute'
+      el.style.width = '140px'
+      el.style.height = '90px'
+      el.style.borderRadius = '16px'
+      el.style.background = 'white'
+      el.style.display = 'flex'
+      el.style.flexDirection = 'column'
+      el.style.alignItems = 'center'
+      el.style.justifyContent = 'center'
+      el.style.gap = '6px'
+      el.style.padding = '12px'
+      el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04)'
+      el.style.willChange = 'transform'
+      el.style.cursor = 'default'
+      el.style.userSelect = 'none'
+
+      el.innerHTML = `
+        <span style="font-size:17px;font-weight:700;color:#1a1a2e;text-align:center;line-height:1.2;">${word.darija}</span>
+        <span style="font-size:12px;font-weight:400;color:#9ca3af;text-align:center;">${word.english}</span>
+      `
+
+      el.addEventListener('mouseenter', () => {
+        el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1), 0 12px 32px rgba(0,0,0,0.08)'
+      })
+
+      el.addEventListener('mouseleave', () => {
+        el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04)'
+      })
+
+      container.appendChild(el)
+      cardsRef.current.push({ el, x: window.innerWidth + 100 + index * SPACING })
+    })
+
+    startTimeRef.current = Date.now()
+    cancelAnimationFrame(rafRef.current)
+    animate()
+  }
+
+  function animate() {
+    const time = (Date.now() - startTimeRef.current) / 1000
+
+    const all = cardsRef.current
+
+    all.forEach(card => {
+      card.x -= SPEED
+
+      if (card.x < -200) {
+        let maxX = -Infinity
+        all.forEach(c => {
+          if (c !== card && c.x > maxX) maxX = c.x
+        })
+        card.x = maxX + SPACING
+      }
+
+      const wavePhase = (card.x + time * WAVE_SPEED) * WAVE_FREQUENCY
+      const waveY = Math.sin(wavePhase) * WAVE_AMPLITUDE
+      const rotation = Math.sin(wavePhase) * 5
+      const scale = 1 + Math.sin(wavePhase * 2) * 0.03
+
+      card.el.style.left = `${card.x}px`
+      card.el.style.top = `${CENTER_Y + waveY}px`
+      card.el.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(${scale})`
+    })
+
+    rafRef.current = requestAnimationFrame(animate)
+  }
+
   return (
-    <div className="w-full flex flex-col items-center mt-8">
-      <p className="text-sm text-zinc-500 mb-4">{label}</p>
-      <div 
+    <div style={{ width: '100%', padding: '40px 0 0' }}>
+      <p style={{
+        fontSize: '13px',
+        color: '#9ca3af',
+        textTransform: 'uppercase' as const,
+        letterSpacing: '1px',
+        marginBottom: '16px',
+        paddingLeft: '24px',
+      }}>
+        {label}
+      </p>
+      <div
         ref={containerRef}
         style={{
           position: 'relative',
@@ -143,3 +137,18 @@ export default function FloatingCards({ label = "Words you'll learn" }: { label?
     </div>
   )
 }
+
+const fallback: Word[] = [
+  { id: '1', darija: 'Sbah lkhir', english: 'Good morning' },
+  { id: '2', darija: 'Bslama', english: 'Goodbye' },
+  { id: '3', darija: 'Shukran', english: 'Thank you' },
+  { id: '4', darija: 'Mrhba', english: 'Welcome' },
+  { id: '5', darija: 'Wash labas', english: 'How are you' },
+  { id: '6', darija: 'Bghit', english: 'I want' },
+  { id: '7', darija: 'Smhli', english: 'Excuse me' },
+  { id: '8', darija: 'Wakha', english: 'Okay' },
+  { id: '9', darija: 'Zwin', english: 'Beautiful' },
+  { id: '10', darija: '3afak', english: 'Please' },
+  { id: '11', darija: 'Daba', english: 'Now' },
+  { id: '12', darija: 'Kbaida', english: 'Tough' },
+]
