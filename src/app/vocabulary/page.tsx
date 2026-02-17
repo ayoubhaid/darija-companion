@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import AudioPlayer from '@/components/ui/AudioPlayer';
+import VocabularyWave from '@/components/VocabularyWave';
 import { VocabularyItem } from '@/types';
 import { getAllVocabulary } from '@/lib/firestore';
 import { 
@@ -277,6 +278,10 @@ export default function VocabularyPage() {
             I Know This
           </Button>
         </div>
+      </div>
+
+      <div className="flex justify-center mt-12">
+        <VocabularyWave />
       </div>
     </div>
   );

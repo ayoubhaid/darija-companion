@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Progress from '@/components/ui/Progress';
+import VocabularyWave from '@/components/VocabularyWave';
 import { Lesson } from '@/types';
 import { getAllLessons } from '@/lib/firestore';
 import { 
@@ -163,6 +164,10 @@ export default function LessonsPage() {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="flex justify-center mt-12">
+        <VocabularyWave />
       </div>
     </div>
   );
