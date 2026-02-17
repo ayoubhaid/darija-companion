@@ -8,6 +8,7 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import AudioPlayer from '@/components/ui/AudioPlayer';
 import VocabularyWave from '@/components/VocabularyWave';
+import FloatingCards from '@/components/FloatingCards';
 import { VocabularyItem } from '@/types';
 import { getAllVocabulary } from '@/lib/firestore';
 import { 
@@ -281,7 +282,7 @@ export default function VocabularyPage() {
       </div>
 
       <div className="flex justify-center mt-12">
-        <VocabularyWave />
+        <FloatingCards />
       </div>
     </div>
   );
