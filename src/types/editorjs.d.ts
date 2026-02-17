@@ -12,6 +12,25 @@ declare module '@editorjs/editorjs' {
     data: Record<string, unknown>;
   }
 
+  export interface BlockToolConstructable {
+    new (config?: { config?: Record<string, unknown> }): BlockTool;
+  }
+
+  export interface BlockTool {
+    render(): HTMLElement | { element: HTMLElement };
+    save(block: HTMLElement): Record<string, unknown>;
+    validate(data: Record<string, unknown>): boolean;
+  }
+
+  export interface InlineToolConstructable {
+    new (): InlineTool;
+  }
+
+  export interface InlineTool {
+    render(): HTMLElement;
+    surround(range: Range): void;
+  }
+
   export interface API {
     blocks: {
       update(id: string, data: Record<string, unknown>): Promise<void>;

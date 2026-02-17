@@ -21,7 +21,7 @@ import clsx from 'clsx';
 import Link from 'next/link';
 
 interface StudentDashboardProps {
-  user: UserProfile;
+  user: UserProfile & { displayName?: string };
   enrollments: Enrollment[];
   courses: Course[];
   courseProgress: Record<string, CourseProgress>;

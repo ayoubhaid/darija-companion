@@ -191,7 +191,7 @@ function BlockRenderer({
 // ============================================
 
 function HeaderBlock({ data }: { data: any }) {
-  const Tag = `h${data.level}` as keyof JSX.IntrinsicElements;
+  const Tag = `h${data.level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   const alignClass = data.alignment ? `text-${data.alignment}` : '';
   
   return (

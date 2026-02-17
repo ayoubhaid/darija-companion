@@ -33,8 +33,8 @@ import {
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
 
-// Dynamic import for Editor to avoid SSR issues
-const Editor = dynamic(() => import('@/components/editor/Editor'), { 
+// Dynamic import for TipTapEditor to avoid SSR issues
+const TipTapEditor = dynamic(() => import('@/components/editor/TipTapEditor'), { 
   ssr: false,
   loading: () => (
     <div className="h-96 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-lg" />
@@ -76,7 +76,7 @@ export function CourseBuilder({ course, onSave, onCancel }: CourseBuilderProps) 
   
   // Current editing lesson
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
-  const [lessonContent, setLessonContent] = useState<EditorJSContent | null>(null);
+  const [lessonContentHtml, setLessonContentHtml] = useState<string>('');
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -177,7 +177,9 @@ export function CourseBuilder({ course, onSave, onCancel }: CourseBuilderProps) 
 
   const editLesson = useCallback((lesson: Lesson) => {
     setEditingLesson(lesson);
-    setLessonContent(lesson.content);
+    // Handle both string (TipTap HTML) and EditorJSContent (JSON) formats
+    const content = lesson.contentHtml || (typeof lesson.content === 'string' ? lesson.content : '');
+    setLessonContentHtml(content);
     setActiveTab('content');
   }, []);
 
@@ -189,16 +191,16 @@ export function CourseBuilder({ course, onSave, onCancel }: CourseBuilderProps) 
     
     const updatedModules = [...modules];
     const lessonIndex = updatedModules[moduleIndex].lessons?.findIndex(l => l.id === editingLesson.id);
-    if (lessonIndex === -1) return;
+    if (lessonIndex === -1 || lessonIndex === undefined || !updatedModules[moduleIndex].lessons) return;
     
-    updatedModules[moduleIndex].lessons![lessonIndex] = {
+    updatedModules[moduleIndex].lessons[lessonIndex] = {
       ...editingLesson,
-      content: lessonContent || editingLesson.content,
+      contentHtml: lessonContentHtml || editingLesson.contentHtml,
       updatedAt: new Date(),
     };
     setModules(updatedModules);
     setEditingLesson(null);
-  }, [editingLesson, lessonContent, modules]);
+  }, [editingLesson, lessonContentHtml, modules]);
 
   return (
     <div className="flex flex-col h-full">
@@ -614,16 +616,10 @@ export function CourseBuilder({ course, onSave, onCancel }: CourseBuilderProps) 
 
                 {/* Editor */}
                 <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden">
-                  <Editor
-                    data={lessonContent || editingLesson.content}
-                    onChange={(data) => setLessonContent(data)}
-                    config={{
-                      placeholder: 'Start creating your lesson content...',
-                      autosave: {
-                        enabled: true,
-                        interval: 30000,
-                      },
-                    }}
+                  <TipTapEditor
+                    content={lessonContentHtml || editingLesson?.contentHtml || ''}
+                    onChange={(html) => setLessonContentHtml(html)}
+                    placeholder="Start creating your lesson content..."
                   />
                 </div>
               </div>

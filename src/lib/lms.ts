@@ -30,7 +30,8 @@ import {
   Timestamp,
   QueryConstraint,
   DocumentData,
-  QueryDocumentSnapshot
+  QueryDocumentSnapshot,
+  DocumentSnapshot
 } from 'firebase/firestore';
 import { db } from './firebase';
 import {
@@ -78,8 +79,11 @@ const COLLECTIONS = {
 /**
  * Convert Firestore document to typed object
  */
-function docToData<T>(doc: QueryDocumentSnapshot<DocumentData>): T {
+function docToData<T>(doc: QueryDocumentSnapshot<DocumentData> | DocumentSnapshot<DocumentData>): T {
   const data = doc.data();
+  if (!data) {
+    throw new Error('Document data is undefined');
+  }
   return {
     id: doc.id,
     ...data,

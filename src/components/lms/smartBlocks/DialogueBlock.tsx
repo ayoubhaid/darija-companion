@@ -272,7 +272,7 @@ export function DialogueBlock({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (audioRef.current) {
+                      if (audioRef.current && line.audioUrl) {
                         audioRef.current.src = line.audioUrl;
                         audioRef.current.playbackRate = playbackSpeed;
                         audioRef.current.play().catch(console.error);

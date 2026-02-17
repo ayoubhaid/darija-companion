@@ -125,6 +125,7 @@ export default function ZelligeBackground() {
       }
 
       draw() {
+        if (!ctx) return;
         ctx.save();
         ctx.translate(this.x, this.y - scrollY * this.depth);
         ctx.rotate(this.angle);
@@ -179,6 +180,7 @@ export default function ZelligeBackground() {
       }
 
       draw() {
+        if (!ctx) return;
         ctx.save();
         ctx.globalAlpha = this.alpha;
         ctx.fillStyle = this.color;
@@ -210,6 +212,7 @@ export default function ZelligeBackground() {
       }
 
       draw() {
+        if (!ctx) return;
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
@@ -280,6 +283,7 @@ export default function ZelligeBackground() {
     }
 
     function init() {
+      if (!canvas) return;
       canvas.width = window.innerWidth;
       canvas.height = Math.max(window.innerHeight, document.body.scrollHeight + 500);
       tiles = [];
@@ -299,6 +303,7 @@ export default function ZelligeBackground() {
     }
 
     function drawLighting() {
+      if (!ctx || !canvas) return;
       const grad = ctx.createRadialGradient(
         canvas.width / 2, canvas.height * 0.15, 100,
         canvas.width / 2, canvas.height * 0.15, canvas.width
@@ -313,6 +318,7 @@ export default function ZelligeBackground() {
     }
 
     function animate(timestamp: number) {
+      if (!ctx || !canvas) return;
       time = timestamp;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
