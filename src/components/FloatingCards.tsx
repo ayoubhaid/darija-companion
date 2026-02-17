@@ -132,8 +132,13 @@ export default function FloatingCards({ label = "Words you'll learn" }: { label?
     <div className="w-full flex flex-col items-center mt-8">
       <p className="text-sm text-zinc-500 mb-4">{label}</p>
       <div 
-        ref={containerRef} 
-        className="relative w-[220px] h-[220px] overflow-hidden"
+        ref={containerRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '220px',
+          overflow: 'hidden',
+        }}
       />
     </div>
   )
