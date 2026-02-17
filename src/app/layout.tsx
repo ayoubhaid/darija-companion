@@ -15,6 +15,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link 
+          rel="stylesheet" 
+          href="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.31.2/dist/editorjs.min.css" 
+          integrity="sha384-y7G1h1 vz7L+90tHA4a593S4V9C4j8b1gYfFfK6bA3kA3q3A3Y3y3y3y3" 
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-screen bg-gray-50 dark:bg-slate-900">
         <Providers>{children}</Providers>
       </body>

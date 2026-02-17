@@ -1,35 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { getLessonById, createLesson, updateLesson } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
-import { Lesson } from '@/types';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-
-const quillModules = {
-  toolbar: [
-    [{ 'header': [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    ['link', 'image'],
-    ['clean']
-  ],
-};
-
-const quillFormats = [
-  'header',
-  'bold', 'italic', 'underline', 'strike',
-  'list', 'bullet',
-  'link', 'image'
-];
+const TipTapEditor = dynamic(() => import('@/components/editor/TipTapEditor'), { ssr: false });
 
 export default function LessonFormPage() {
   const router = useRouter();
@@ -40,10 +22,11 @@ export default function LessonFormPage() {
 
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
+  const [editorContent, setEditorContent] = useState<string>('');
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    contentHtml: '',
     difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     duration: 15,
     topic: '',
@@ -51,16 +34,33 @@ export default function LessonFormPage() {
     imageUrl: '',
   });
 
+  // Fetch lesson data when editing
   useEffect(() => {
     if (isEditing && lessonId) {
       const fetchLesson = async () => {
         try {
+          console.log('Fetching lesson:', lessonId);
           const lesson = await getLessonById(lessonId);
+          console.log('Lesson fetched:', lesson);
           if (lesson) {
+            // Handle contentJson (string from Firestore)
+            let contentHtml = '';
+            if (lesson.contentJson) {
+              if (typeof lesson.contentJson === 'string') {
+                // Try to parse as TipTap HTML or use contentHtml
+                contentHtml = lesson.contentHtml || lesson.contentJson;
+              } else if (typeof lesson.contentJson === 'object') {
+                // Handle Editor.js format - convert to HTML for display
+                contentHtml = lesson.contentHtml || '';
+              }
+            } else if (lesson.contentHtml) {
+              contentHtml = lesson.contentHtml;
+            }
+            
+            setEditorContent(contentHtml);
             setFormData({
               title: lesson.title || '',
               description: lesson.description || '',
-              contentHtml: lesson.contentHtml || '',
               difficulty: lesson.difficulty || 'beginner',
               duration: lesson.duration || 15,
               topic: lesson.topic || '',
@@ -72,11 +72,21 @@ export default function LessonFormPage() {
           console.error('Error fetching lesson:', error);
         } finally {
           setLoading(false);
+          setInitialDataLoaded(true);
         }
       };
       fetchLesson();
+    } else {
+      // For new lessons, set initialDataLoaded to true immediately
+      setInitialDataLoaded(true);
+      setLoading(false);
     }
   }, [isEditing, lessonId]);
+
+  const handleEditorChange = useCallback((html: string, json: any) => {
+    console.log('Editor changed, length:', html.length);
+    setEditorContent(html);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +97,8 @@ export default function LessonFormPage() {
       const lessonData = {
         title: formData.title,
         description: formData.description,
-        contentHtml: formData.contentHtml,
+        contentJson: editorContent, // Store HTML content as string for TipTap
+        contentHtml: editorContent,
         difficulty: formData.difficulty,
         duration: formData.duration,
         topic: formData.topic,
@@ -100,8 +111,10 @@ export default function LessonFormPage() {
         },
       };
 
+      console.log('Saving lesson data, content length:', editorContent.length);
+
       if (isEditing) {
-        await updateLesson(lessonId, lessonData, user.uid, user.displayName || 'Admin');
+        await updateLesson(lessonId, lessonData as any, user.uid, user.displayName || 'Admin');
       } else {
         await createLesson(lessonData as any, user.uid, user.displayName || 'Admin');
       }
@@ -132,10 +145,10 @@ export default function LessonFormPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEditing ? 'Edit Lesson' : 'New Lesson'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             {isEditing ? 'Update lesson content' : 'Create a new lesson'}
           </p>
         </div>
@@ -143,7 +156,6 @@ export default function LessonFormPage() {
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <h2 className="text-lg font-semibold mb-4">Lesson Content</h2>
@@ -158,7 +170,7 @@ export default function LessonFormPage() {
                 />
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Description
                   </label>
                   <textarea
@@ -166,43 +178,48 @@ export default function LessonFormPage() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Enter lesson description"
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Content (Rich Text)
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Content
                   </label>
-                  <div className="quill-wrapper">
-                    <ReactQuill
-                      theme="snow"
-                      value={formData.contentHtml}
-                      onChange={(value) => setFormData({ ...formData, contentHtml: value })}
-                      modules={quillModules}
-                      formats={quillFormats}
-                      className="bg-white"
+                  {/* Only render Editor after data is loaded */}
+                  {initialDataLoaded ? (
+                    <TipTapEditor
+                      key={isEditing ? lessonId : 'new-editor'}
+                      content={editorContent}
+                      onChange={handleEditorChange}
+                      placeholder="Start writing your lesson content..."
                     />
-                  </div>
+                  ) : (
+                    <div className="min-h-[400px] border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
+                      <div className="flex items-center gap-2 text-zinc-500">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-500"></div>
+                        <span>Loading editor...</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
             <Card>
               <h2 className="text-lg font-semibold mb-4">Settings</h2>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Difficulty
                   </label>
                   <select
                     value={formData.difficulty}
                     onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as any })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>

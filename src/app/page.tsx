@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import ZelligeBackground from '@/components/ZelligeBackground';
 import { getAllLessons, getAllVocabulary, getAllQuizzes } from '@/lib/firestore';
 import { Lesson, Quiz, VocabularyItem } from '@/types';
 import { 
@@ -65,12 +66,9 @@ const testimonials = [
 function GuestLanding() {
   return (
     <div className="min-h-screen">
+      <ZelligeBackground />
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-zinc-950">
-        <div className="absolute inset-0 bg-dots opacity-30" />
-        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }} />
-        
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8 animate-fade-in">
@@ -78,12 +76,12 @@ function GuestLanding() {
               Start your Darija journey today
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tight animate-fade-in-up">
+            <h1 className="text-5xl md:text-7xl font-bold text-zinc-900 mb-8 tracking-tight animate-fade-in-up">
               Master Moroccan Darija
               <span className="block mt-2 text-gradient">the Natural Way</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl mx-auto mb-12 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <p className="text-xl md:text-2xl text-zinc-700 max-w-2xl mx-auto mb-12 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
               Interactive lessons, smart flashcards, and engaging quizzes designed to make learning conversational Moroccan Arabic effortless.
             </p>
             
@@ -104,19 +102,19 @@ function GuestLanding() {
             <div className="grid grid-cols-4 gap-8 mt-20 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
               {stats.map((stat) => (
                 <div key={stat.label} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-1">{stat.value}</div>
-                  <div className="text-sm text-zinc-500">{stat.label}</div>
+                  <div className="text-3xl md:text-4xl font-bold text-zinc-800 mb-1">{stat.value}</div>
+                  <div className="text-sm text-zinc-600">{stat.label}</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-zinc-950 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
       </section>
 
       {/* Features Bento Grid */}
-      <section className="py-24 bg-zinc-50 dark:bg-zinc-950 relative">
+      <section className="py-24 bg-white dark:bg-zinc-950 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
@@ -151,7 +149,7 @@ function GuestLanding() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-white dark:bg-zinc-900">
+      <section className="py-24 bg-zinc-50 dark:bg-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
@@ -176,16 +174,13 @@ function GuestLanding() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-zinc-950 relative overflow-hidden">
-        <div className="absolute inset-0 bg-dots opacity-20" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl" />
-        
+      <section className="py-24 bg-zinc-900 relative overflow-hidden">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Start Your Journey?
           </h2>
-          <p className="text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
-            Join thousands of learners mastering Moroccan Darija every day. It&apos;s free to start!
+          <p className="text-xl text-zinc-300 mb-10 max-w-2xl mx-auto">
+            Join thousands of learners mastering Moroccan Darija every day. It's free to start!
           </p>
           <Link href="/signup">
             <Button size="lg" variant="glow" className="px-10 py-4 text-lg">
@@ -289,7 +284,8 @@ function UserDashboard({ userProfile }: { userProfile: any }) {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <ZelligeBackground />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-2">

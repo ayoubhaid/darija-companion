@@ -9,12 +9,10 @@ import { useAuth } from '@/hooks/useAuth';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import AudioPlayer from '@/components/ui/AudioPlayer';
 import { Lesson, VocabularyItem } from '@/types';
 import { getLessonById, updateUserProgress } from '@/lib/firestore';
 import { 
   ArrowLeftIcon,
-  PlayIcon,
   SpeakerWaveIcon,
   CheckCircleIcon,
   BookOpenIcon,
@@ -97,6 +95,9 @@ export default function LessonDetailPage() {
   const sentences = lesson.content?.sentences || [];
   const isCompleted = userProfile?.completedLessons?.includes(lessonId);
 
+  // Get content from contentHtml or contentJson (stored as string)
+  const htmlContent = lesson.contentHtml || (typeof lesson.contentJson === 'string' ? lesson.contentJson : '');
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -132,12 +133,12 @@ export default function LessonDetailPage() {
         </div>
 
         <div className="space-y-6">
-          {/* Rich Text Content */}
-          {lesson.contentHtml && (
+          {/* TipTap HTML Content */}
+          {htmlContent && htmlContent.length > 0 && (
             <Card padding="lg">
               <div 
-                className="prose prose-zinc dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: lesson.contentHtml }}
+                className="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: htmlContent }}
               />
             </Card>
           )}
@@ -209,7 +210,7 @@ export default function LessonDetailPage() {
           )}
 
           {/* If no content at all */}
-          {!lesson.contentHtml && vocabulary.length === 0 && sentences.length === 0 && (
+          {!htmlContent && vocabulary.length === 0 && sentences.length === 0 && (
             <Card padding="lg" className="text-center py-12">
               <BookOpenIcon className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
               <p className="text-zinc-500">No content available for this lesson yet.</p>

@@ -3,6 +3,54 @@
     "id": "lesson_001",
     "title": "Basic Greetings",
     "description": "Learn essential Moroccan Arabic greetings and introductions",
+    "contentJson": {
+      "time": 1699999999999,
+      "blocks": [
+        {
+          "id": "header_1",
+          "type": "header",
+          "data": {
+            "text": "Basic Greetings in Moroccan Darija",
+            "level": 1
+          }
+        },
+        {
+          "id": "para_1",
+          "type": "paragraph",
+          "data": {
+            "text": "Welcome to your first lesson! In this lesson, you'll learn the most common greetings used in Morocco."
+          }
+        },
+        {
+          "id": "header_2",
+          "type": "header",
+          "data": {
+            "text": "Essential Greetings",
+            "level": 2
+          }
+        },
+        {
+          "id": "list_1",
+          "type": "list",
+          "data": {
+            "style": "unordered",
+            "items": [
+              "<b>Salam</b> - Hello/Peace",
+              "<b>Marhaba</b> - Welcome",
+              "<b>Shukran</b> - Thank you",
+              "<b>Afak</b> - Please"
+            ]
+          }
+        },
+        {
+          "id": "para_2",
+          "type": "paragraph",
+          "data": {
+            "text": "Practice these greetings with a partner to master the pronunciation!"
+          }
+        }
+      ]
+    },
     "content": {
       "vocabulary": [
         { "word": "Salam", "transliteration": "Salam", "translation": "Hello/Peace", "arabic": "سلام" },
@@ -27,6 +75,40 @@
     "id": "lesson_002",
     "title": "Numbers 1-10",
     "description": "Master counting from one to ten in Moroccan Arabic",
+    "contentJson": {
+      "time": 1699999999999,
+      "blocks": [
+        {
+          "id": "header_1",
+          "type": "header",
+          "data": {
+            "text": "Numbers in Darija",
+            "level": 1
+          }
+        },
+        {
+          "id": "para_1",
+          "type": "paragraph",
+          "data": {
+            "text": "Learning numbers is essential for shopping, telling time, and everyday conversations."
+          }
+        },
+        {
+          "id": "list_1",
+          "type": "list",
+          "data": {
+            "style": "unordered",
+            "items": [
+              "<b>Wahid</b> - One (واحد)",
+              "<b>Ithnin</b> - Two (اتنين)",
+              "<b>Thalatha</b> - Three (تلاتة)",
+              "<b>Arbaa</b> - Four (أربعة)",
+              "<b>Khamsa</b> - Five (خمسة)"
+            ]
+          }
+        }
+      ]
+    },
     "content": {
       "vocabulary": [
         { "word": "Wahid", "transliteration": "Wahid", "translation": "One", "arabic": "واحد" },
@@ -51,6 +133,26 @@
     "id": "lesson_003",
     "title": "Common Phrases",
     "description": "Essential everyday phrases for conversation",
+    "contentJson": {
+      "time": 1699999999999,
+      "blocks": [
+        {
+          "id": "header_1",
+          "type": "header",
+          "data": {
+            "text": "Everyday Phrases",
+            "level": 1
+          }
+        },
+        {
+          "id": "para_1",
+          "type": "paragraph",
+          "data": {
+            "text": "These phrases will help you navigate daily conversations in Morocco."
+          }
+        }
+      ]
+    },
     "content": {
       "vocabulary": [
         { "word": "Labas", "transliteration": "Labas", "translation": "How are you?", "arabic": "لاباس" },
@@ -75,6 +177,26 @@
     "id": "lesson_004",
     "title": "Family Members",
     "description": "Learn words for family members in Darija",
+    "contentJson": {
+      "time": 1699999999999,
+      "blocks": [
+        {
+          "id": "header_1",
+          "type": "header",
+          "data": {
+            "text": "Family Vocabulary",
+            "level": 1
+          }
+        },
+        {
+          "id": "para_1",
+          "type": "paragraph",
+          "data": {
+            "text": "Learning family terms is important when introducing yourself and talking about relationships."
+          }
+        }
+      ]
+    },
     "content": {
       "vocabulary": [
         { "word": "Baba", "transliteration": "Baba", "translation": "Father", "arabic": "بابا" },
@@ -100,6 +222,26 @@
     "id": "lesson_005",
     "title": "Food & Drinks",
     "description": "Essential vocabulary for ordering food and drinks",
+    "contentJson": {
+      "time": 1699999999999,
+      "blocks": [
+        {
+          "id": "header_1",
+          "type": "header",
+          "data": {
+            "text": "Food & Drinks",
+            "level": 1
+          }
+        },
+        {
+          "id": "para_1",
+          "type": "paragraph",
+          "data": {
+            "text": "Moroccan cuisine is delicious! Learn these words to order at restaurants and shops."
+          }
+        }
+      ]
+    },
     "content": {
       "vocabulary": [
         { "word": "Lkhobz", "transliteration": "Lkhobz", "translation": "Bread", "arabic": "الخبز" },

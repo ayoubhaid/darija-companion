@@ -39,6 +39,7 @@ export interface Lesson {
   description: string;
   content: LessonContent;
   contentHtml?: string;
+  contentJson?: unknown;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration: number;
   tags: string[];
