@@ -7,7 +7,7 @@ import { createLesson } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
-import { Block, serializeBlocks } from '@/components/editor/LessonBuilder';
+import { ContentItem, serializeItems } from '@/components/editor/LessonBuilder';
 
 const LessonBuilder = dynamic(() => import('@/components/editor/LessonBuilder'), { ssr: false });
 
@@ -21,7 +21,7 @@ export default function NewLessonPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
-  const [blocks, setBlocks] = useState<Block[]>([]);
+  const [items, setItems] = useState<ContentItem[]>([]);
   const [form, setForm] = useState({
     title: '', description: '',
     difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
@@ -29,26 +29,25 @@ export default function NewLessonPage() {
     duration: 15, topic: '', tags: '', imageUrl: '',
   });
 
-  const handleBlocksChange = useCallback((b: Block[]) => setBlocks(b), []);
+  const handleItemsChange = useCallback((it: ContentItem[]) => setItems(it), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
     try {
-      const blocksJson = serializeBlocks(blocks);
-      // Also generate a simple HTML summary for legacy compatibility
-      const htmlSummary = blocks.map(b => {
-        if (b.type === 'text') return b.html || '';
-        if (b.type === 'image' && b.src) return `<img src="${b.src}" alt="${b.alt || ''}" />`;
-        if (b.type === 'callout') return `<blockquote><strong>${b.calloutTitle}</strong><p>${b.calloutText}</p></blockquote>`;
+      const contentJson = serializeItems(items);
+      const htmlSummary = items.map(it => {
+        if (it.kind === 'text') return it.html || '';
+        if (it.blockType === 'image' && it.src) return `<img src="${it.src}" alt="${it.alt || ''}" />`;
+        if (it.blockType === 'callout') return `<blockquote><strong>${it.calloutTitle}</strong><p>${it.calloutText}</p></blockquote>`;
         return '';
       }).join('\n');
 
       await createLesson({
         title: form.title,
         description: form.description,
-        contentJson: blocksJson,
+        contentJson: contentJson,
         contentHtml: htmlSummary,
         difficulty: form.difficulty,
         status: form.status,
@@ -102,7 +101,7 @@ export default function NewLessonPage() {
             {/* Block builder */}
             <div style={S.card}>
               <h2 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#dce4f0' }}>Lesson Content</h2>
-              <LessonBuilder onChange={handleBlocksChange} />
+              <LessonBuilder onChange={handleItemsChange} autoSaveKey="lesson-new-draft" />
             </div>
           </div>
 
@@ -148,7 +147,7 @@ export default function NewLessonPage() {
             {/* Block count summary */}
             <div style={{ ...S.card, padding: '14px 18px' }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: '#5a6880', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Content Summary</div>
-              <div style={{ fontSize: 13, color: '#8b9cb8' }}>{blocks.length} block{blocks.length !== 1 ? 's' : ''} total</div>
+              <div style={{ fontSize: 13, color: '#8b9cb8' }}>{items.length} item{items.length !== 1 ? 's' : ''} total</div>
             </div>
 
             {/* Actions */}
