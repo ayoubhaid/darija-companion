@@ -33,6 +33,44 @@ export interface LessonContent {
   exercises: Exercise[];
 }
 
+// New component system types
+export interface LessonComponent {
+  id: number;
+  type: 'flashcard' | 'quiz' | 'audio' | 'matching' | 'video' | 'dialogue' | 'grammar' | 'reading';
+  label: string;
+  config: ComponentConfig;
+}
+
+export interface ComponentConfig {
+  // Flashcard config
+  cards?: Array<{ front: string; back: string }>;
+  
+  // Quiz config
+  questions?: Array<{
+    q: string;
+    options: string[];
+    correct: number;
+  }>;
+  
+  // Audio config
+  tracks?: Array<{
+    title: string;
+    darija: string;
+    english: string;
+    audioUrl?: string;
+  }>;
+  
+  // Matching game config
+  pairs?: Array<{ darija: string; english: string }>;
+  
+  // Video config
+  videoUrl?: string;
+  title?: string;
+  
+  // Generic config for other components
+  [key: string]: unknown;
+}
+
 export interface Lesson {
   id: string;
   title: string;
@@ -40,6 +78,15 @@ export interface Lesson {
   content: LessonContent;
   contentHtml?: string;
   contentJson?: unknown;
+  
+  // New fields for component system
+  body?: string; // Rich HTML content
+  components_list?: LessonComponent[]; // Interactive components
+  level?: 'Beginner' | 'Elementary' | 'Intermediate' | 'Advanced';
+  status?: 'draft' | 'published';
+  views?: number;
+  components?: number; // Component count for display
+  
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration: number;
   tags: string[];
