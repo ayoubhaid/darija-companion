@@ -4,15 +4,17 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getAllVocabulary, createVocabulary, updateVocabulary } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
-import { VocabularyItem } from '@/types';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 
-const categories = ['greetings', 'numbers', 'family', 'food', 'phrases', 'travel', 'shopping', 'time', 'weather', 'other'];
-const difficulties = ['beginner', 'intermediate', 'advanced'];
+const CATEGORIES = ['greetings', 'numbers', 'family', 'food', 'phrases', 'travel', 'shopping', 'time', 'weather', 'other'];
+const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
+
+const S = {
+  label: { display: 'block', fontSize: 11, fontWeight: 600, color: '#5a6880', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: 6 },
+  input: { background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 9, color: '#dce4f0', fontSize: 13, padding: '9px 12px', outline: 'none', width: '100%' } as React.CSSProperties,
+  card: { background: '#0c0e16', border: '1px solid #1e2130', borderRadius: 14, padding: '20px 22px' } as React.CSSProperties,
+};
 
 export default function VocabularyFormPage() {
   const router = useRouter();
@@ -23,177 +25,106 @@ export default function VocabularyFormPage() {
 
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    word: '',
-    transliteration: '',
-    translation: '',
-    arabic: '',
-    category: 'greetings',
-    difficulty: 'beginner',
-    example: '',
-    exampleTranslation: '',
+  const [form, setForm] = useState({
+    word: '', transliteration: '', translation: '', arabic: '',
+    category: 'greetings', difficulty: 'beginner',
+    example: '', exampleTranslation: '',
   });
 
   useEffect(() => {
-    if (isEditing && vocabId) {
-      const fetchVocabulary = async () => {
-        try {
-          const allVocab = await getAllVocabulary();
-          const vocab = allVocab.find(v => v.id === vocabId);
-          if (vocab) {
-            setFormData({
-              word: vocab.word || '',
-              transliteration: vocab.transliteration || '',
-              translation: vocab.translation || '',
-              arabic: vocab.arabic || '',
-              category: vocab.category || 'greetings',
-              difficulty: vocab.difficulty || 'beginner',
-              example: vocab.example || '',
-              exampleTranslation: vocab.exampleTranslation || '',
-            });
-          }
-        } catch (error) {
-          console.error('Error fetching vocabulary:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchVocabulary();
-    }
+    if (!isEditing) return;
+    getAllVocabulary().then(all => {
+      const v = all.find(x => x.id === vocabId);
+      if (v) setForm({ word: v.word || '', transliteration: v.transliteration || '', translation: v.translation || '', arabic: v.arabic || '', category: v.category || 'greetings', difficulty: v.difficulty || 'beginner', example: v.example || '', exampleTranslation: v.exampleTranslation || '' });
+    }).catch(console.error).finally(() => setLoading(false));
   }, [isEditing, vocabId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     setSaving(true);
     try {
       if (isEditing) {
-        await updateVocabulary(vocabId, formData, user.uid, user.displayName || 'Admin');
+        await updateVocabulary(vocabId, form, user.uid, user.displayName || 'Admin');
       } else {
-        await createVocabulary(formData, user.uid, user.displayName || 'Admin');
+        await createVocabulary(form, user.uid, user.displayName || 'Admin');
       }
       router.push('/admin/vocabulary');
-    } catch (error) {
-      console.error('Error saving vocabulary:', error);
-      alert('Failed to save');
-    } finally {
-      setSaving(false);
-    }
+    } catch { alert('Failed to save'); }
+    finally { setSaving(false); }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid #10b981', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
 
   return (
-    <div>
-      <div className="flex items-center mb-6">
-        <Link href="/admin/vocabulary" className="mr-4">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Link href="/admin/vocabulary" style={{ display: 'flex', padding: 6, background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 8, color: '#5a6880', textDecoration: 'none' }}>
+          <ArrowLeft size={16} />
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {isEditing ? 'Edit Word' : 'Add New Word'}
-          </h1>
-        </div>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#f0f4ff' }}>{isEditing ? 'Edit Word' : 'Add New Word'}</h1>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="max-w-2xl">
-          <Card>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Word (Darija)"
-                  value={formData.word}
-                  onChange={(e) => setFormData({ ...formData, word: e.target.value })}
-                  placeholder="e.g., Salam"
-                  required
-                />
-                <Input
-                  label="Arabic Script"
-                  value={formData.arabic}
-                  onChange={(e) => setFormData({ ...formData, arabic: e.target.value })}
-                  placeholder="e.g., سلام"
-                  className="arabic-text"
-                  dir="rtl"
-                />
-              </div>
-
-              <Input
-                label="Transliteration"
-                value={formData.transliteration}
-                onChange={(e) => setFormData({ ...formData, transliteration: e.target.value })}
-                placeholder="Phonetic spelling"
-              />
-
-              <Input
-                label="Translation (English)"
-                value={formData.translation}
-                onChange={(e) => setFormData({ ...formData, translation: e.target.value })}
-                placeholder="e.g., Hello/Peace"
-                required
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div style={{ maxWidth: 640 }}>
+          <div style={S.card}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-                    ))}
+                  <label style={S.label}>Word (Darija) *</label>
+                  <input required value={form.word} onChange={e => setForm({ ...form, word: e.target.value })} placeholder="e.g., Salam" style={S.input} />
+                </div>
+                <div>
+                  <label style={S.label}>Arabic Script</label>
+                  <input value={form.arabic} onChange={e => setForm({ ...form, arabic: e.target.value })} placeholder="e.g., سلام" dir="rtl" style={{ ...S.input, fontFamily: 'serif' }} />
+                </div>
+              </div>
+              <div>
+                <label style={S.label}>Transliteration</label>
+                <input value={form.transliteration} onChange={e => setForm({ ...form, transliteration: e.target.value })} placeholder="Phonetic spelling" style={S.input} />
+              </div>
+              <div>
+                <label style={S.label}>Translation (English) *</label>
+                <input required value={form.translation} onChange={e => setForm({ ...form, translation: e.target.value })} placeholder="e.g., Hello/Peace" style={S.input} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={S.label}>Category</label>
+                  <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} style={{ ...S.input, cursor: 'pointer' }}>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
-                  <select
-                    value={formData.difficulty}
-                    onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    {difficulties.map(diff => (
-                      <option key={diff} value={diff}>{diff.charAt(0).toUpperCase() + diff.slice(1)}</option>
-                    ))}
+                  <label style={S.label}>Difficulty</label>
+                  <select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value })} style={{ ...S.input, cursor: 'pointer' }}>
+                    {DIFFICULTIES.map(d => <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
                   </select>
                 </div>
               </div>
-
-              <Input
-                label="Example Sentence"
-                value={formData.example}
-                onChange={(e) => setFormData({ ...formData, example: e.target.value })}
-                placeholder="e.g., Salam, kif dayr?"
-              />
-
-              <Input
-                label="Example Translation"
-                value={formData.exampleTranslation}
-                onChange={(e) => setFormData({ ...formData, exampleTranslation: e.target.value })}
-                placeholder="e.g., Hello, how are you?"
-              />
+              <div>
+                <label style={S.label}>Example Sentence</label>
+                <input value={form.example} onChange={e => setForm({ ...form, example: e.target.value })} placeholder="e.g., Salam, kif dayr?" style={S.input} />
+              </div>
+              <div>
+                <label style={S.label}>Example Translation</label>
+                <input value={form.exampleTranslation} onChange={e => setForm({ ...form, exampleTranslation: e.target.value })} placeholder="e.g., Hello, how are you?" style={S.input} />
+              </div>
             </div>
 
-            <div className="flex justify-end space-x-3 mt-6">
-              <Link href="/admin/vocabulary">
-                <Button variant="outline" type="button">Cancel</Button>
+            <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
+              <Link href="/admin/vocabulary" style={{ textDecoration: 'none' }}>
+                <button type="button" style={{ padding: '9px 20px', background: 'transparent', border: '1px solid #2a2d3a', borderRadius: 9, color: '#5a6880', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
               </Link>
-              <Button type="submit" loading={saving}>
-                <Save className="w-5 h-5 mr-2" />
-                {saving ? 'Saving...' : 'Save Word'}
-              </Button>
+              <button type="submit" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', background: 'linear-gradient(135deg,#10b981,#059669)', border: 'none', borderRadius: 9, color: 'white', fontSize: 13, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
+                <Save size={14} /> {saving ? 'Saving…' : 'Save Word'}
+              </button>
             </div>
-          </Card>
+          </div>
         </div>
       </form>
     </div>

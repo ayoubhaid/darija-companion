@@ -7,11 +7,14 @@ import { getLessonById, createLesson, updateLesson } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 
 const TipTapEditor = dynamic(() => import('@/components/editor/TipTapEditor'), { ssr: false });
+
+const S = {
+  label: { display: 'block', fontSize: 11, fontWeight: 600, color: '#5a6880', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: 6 },
+  input: { background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 9, color: '#dce4f0', fontSize: 13, padding: '9px 12px', outline: 'none', width: '100%' } as React.CSSProperties,
+  card: { background: '#0c0e16', border: '1px solid #1e2130', borderRadius: 14, padding: '20px 22px' } as React.CSSProperties,
+};
 
 export default function LessonFormPage() {
   const router = useRouter();
@@ -22,252 +25,162 @@ export default function LessonFormPage() {
 
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
-  const [editorContent, setEditorContent] = useState<string>('');
-  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
+  const [editorContent, setEditorContent] = useState('');
+  const [initialDataLoaded, setInitialDataLoaded] = useState(!isEditing);
+  const [form, setForm] = useState({
+    title: '', description: '',
     difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
-    duration: 15,
-    topic: '',
-    tags: '',
-    imageUrl: '',
+    status: 'draft' as 'draft' | 'published',
+    duration: 15, topic: '', tags: '', imageUrl: '',
   });
 
-  // Fetch lesson data when editing
   useEffect(() => {
-    if (isEditing && lessonId) {
-      const fetchLesson = async () => {
-        try {
-          console.log('Fetching lesson:', lessonId);
-          const lesson = await getLessonById(lessonId);
-          console.log('Lesson fetched:', lesson);
-          if (lesson) {
-            // Handle contentJson (string from Firestore)
-            let contentHtml = '';
-            if (lesson.contentJson) {
-              if (typeof lesson.contentJson === 'string') {
-                // Try to parse as TipTap HTML or use contentHtml
-                contentHtml = lesson.contentHtml || lesson.contentJson;
-              } else if (typeof lesson.contentJson === 'object') {
-                // Handle Editor.js format - convert to HTML for display
-                contentHtml = lesson.contentHtml || '';
-              }
-            } else if (lesson.contentHtml) {
-              contentHtml = lesson.contentHtml;
-            }
-            
-            setEditorContent(contentHtml);
-            setFormData({
-              title: lesson.title || '',
-              description: lesson.description || '',
-              difficulty: lesson.difficulty || 'beginner',
-              duration: lesson.duration || 15,
-              topic: lesson.topic || '',
-              tags: lesson.tags?.join(', ') || '',
-              imageUrl: lesson.imageUrl || '',
-            });
-          }
-        } catch (error) {
-          console.error('Error fetching lesson:', error);
-        } finally {
-          setLoading(false);
-          setInitialDataLoaded(true);
-        }
-      };
-      fetchLesson();
-    } else {
-      // For new lessons, set initialDataLoaded to true immediately
-      setInitialDataLoaded(true);
-      setLoading(false);
-    }
+    if (!isEditing) return;
+    getLessonById(lessonId).then(lesson => {
+      if (lesson) {
+        const html = lesson.contentHtml || (typeof lesson.contentJson === 'string' ? lesson.contentJson : '') || '';
+        setEditorContent(html);
+        setForm({
+          title: lesson.title || '',
+          description: lesson.description || '',
+          difficulty: lesson.difficulty || 'beginner',
+          status: (lesson.status as any) || 'draft',
+          duration: lesson.duration || 15,
+          topic: lesson.topic || '',
+          tags: lesson.tags?.join(', ') || '',
+          imageUrl: lesson.imageUrl || '',
+        });
+      }
+    }).catch(console.error).finally(() => { setLoading(false); setInitialDataLoaded(true); });
   }, [isEditing, lessonId]);
 
-  const handleEditorChange = useCallback((html: string, json: any) => {
-    console.log('Editor changed, length:', html.length);
-    setEditorContent(html);
-  }, []);
+  const handleEditorChange = useCallback((html: string) => setEditorContent(html), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     setSaving(true);
     try {
-      const lessonData = {
-        title: formData.title,
-        description: formData.description,
-        contentJson: editorContent, // Store HTML content as string for TipTap
-        contentHtml: editorContent,
-        difficulty: formData.difficulty,
-        duration: formData.duration,
-        topic: formData.topic,
-        tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
-        imageUrl: formData.imageUrl,
-        content: {
-          vocabulary: [],
-          sentences: [],
-          exercises: [],
-        },
+      const data = {
+        title: form.title, description: form.description,
+        contentJson: editorContent, contentHtml: editorContent,
+        difficulty: form.difficulty, status: form.status,
+        duration: form.duration, topic: form.topic,
+        tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+        imageUrl: form.imageUrl,
+        content: { vocabulary: [], sentences: [], exercises: [] },
       };
-
-      console.log('Saving lesson data, content length:', editorContent.length);
-
       if (isEditing) {
-        await updateLesson(lessonId, lessonData as any, user.uid, user.displayName || 'Admin');
+        await updateLesson(lessonId, data as any, user.uid, user.displayName || 'Admin');
       } else {
-        await createLesson(lessonData as any, user.uid, user.displayName || 'Admin');
+        await createLesson(data as any, user.uid, user.displayName || 'Admin');
       }
-
       router.push('/admin/lessons');
-    } catch (error) {
-      console.error('Error saving lesson:', error);
-      alert('Failed to save lesson');
-    } finally {
-      setSaving(false);
-    }
+    } catch { alert('Failed to save lesson'); }
+    finally { setSaving(false); }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid #10b981', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
 
   return (
-    <div>
-      <div className="flex items-center mb-6">
-        <Link href="/admin/lessons" className="mr-4">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Link href="/admin/lessons" style={{ display: 'flex', padding: 6, background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 8, color: '#5a6880', textDecoration: 'none' }}>
+          <ArrowLeft size={16} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {isEditing ? 'Edit Lesson' : 'New Lesson'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {isEditing ? 'Update lesson content' : 'Create a new lesson'}
-          </p>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#f0f4ff' }}>{isEditing ? 'Edit Lesson' : 'New Lesson'}</h1>
+          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#5a6880' }}>{isEditing ? 'Update lesson content' : 'Create a new lesson'}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <h2 className="text-lg font-semibold mb-4">Lesson Content</h2>
-              
-              <div className="space-y-4">
-                <Input
-                  label="Title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Enter lesson title"
-                  required
-                />
-
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, alignItems: 'start' }}>
+          {/* Main content */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={S.card}>
+              <h2 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#dce4f0' }}>Lesson Content</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Enter lesson description"
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
+                  <label style={S.label}>Title *</label>
+                  <input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Enter lesson title" style={S.input} />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Content
-                  </label>
-                  {/* Only render Editor after data is loaded */}
+                  <label style={S.label}>Description</label>
+                  <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Brief description" rows={3} style={{ ...S.input, resize: 'vertical' }} />
+                </div>
+                <div>
+                  <label style={S.label}>Content</label>
                   {initialDataLoaded ? (
                     <TipTapEditor
-                      key={isEditing ? lessonId : 'new-editor'}
+                      key={isEditing ? lessonId : 'new'}
                       content={editorContent}
                       onChange={handleEditorChange}
-                      placeholder="Start writing your lesson content..."
+                      placeholder="Start writing your lesson content…"
                     />
                   ) : (
-                    <div className="min-h-[400px] border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
-                      <div className="flex items-center gap-2 text-zinc-500">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-500"></div>
-                        <span>Loading editor...</span>
-                      </div>
+                    <div style={{ minHeight: 300, background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5a6880', fontSize: 13 }}>
+                      Loading editor…
                     </div>
                   )}
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <Card>
-              <h2 className="text-lg font-semibold mb-4">Settings</h2>
-              
-              <div className="space-y-4">
+          {/* Sidebar */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={S.card}>
+              <h2 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#dce4f0' }}>Settings</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Difficulty
-                  </label>
-                  <select
-                    value={formData.difficulty}
-                    onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as any })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
+                  <label style={S.label}>Difficulty</label>
+                  <select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value as any })} style={{ ...S.input, cursor: 'pointer' }}>
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
                     <option value="advanced">Advanced</option>
                   </select>
                 </div>
-
-                <Input
-                  label="Duration (minutes)"
-                  type="number"
-                  value={formData.duration}
-                  onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 15 })}
-                  min={1}
-                />
-
-                <Input
-                  label="Topic"
-                  value={formData.topic}
-                  onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-                  placeholder="e.g., greetings, numbers"
-                />
-
-                <Input
-                  label="Tags"
-                  value={formData.tags}
-                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  placeholder="Comma-separated tags"
-                />
-
-                <Input
-                  label="Image URL"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                />
+                <div>
+                  <label style={S.label}>Status</label>
+                  <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value as any })} style={{ ...S.input, cursor: 'pointer' }}>
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={S.label}>Duration (minutes)</label>
+                  <input type="number" min={1} value={form.duration} onChange={e => setForm({ ...form, duration: parseInt(e.target.value) || 15 })} style={S.input} />
+                </div>
+                <div>
+                  <label style={S.label}>Topic</label>
+                  <input value={form.topic} onChange={e => setForm({ ...form, topic: e.target.value })} placeholder="e.g., greetings" style={S.input} />
+                </div>
+                <div>
+                  <label style={S.label}>Tags</label>
+                  <input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="Comma-separated" style={S.input} />
+                </div>
+                <div>
+                  <label style={S.label}>Image URL</label>
+                  <input value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://…" style={S.input} />
+                </div>
               </div>
-            </Card>
+            </div>
 
-            <div className="flex space-x-3">
-              <Link href="/admin/lessons" className="flex-1">
-                <Button variant="outline" type="button" className="w-full">
-                  Cancel
-                </Button>
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Link href="/admin/lessons" style={{ flex: 1, textDecoration: 'none' }}>
+                <button type="button" style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid #2a2d3a', borderRadius: 9, color: '#5a6880', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
               </Link>
-              <Button type="submit" loading={saving} className="flex-1">
-                <Save className="w-5 h-5 mr-2" />
-                {saving ? 'Saving...' : 'Save Lesson'}
-              </Button>
+              <button type="submit" disabled={saving} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px', background: 'linear-gradient(135deg,#10b981,#059669)', border: 'none', borderRadius: 9, color: 'white', fontSize: 13, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
+                <Save size={14} /> {saving ? 'Saving…' : isEditing ? 'Save Changes' : 'Create'}
+              </button>
             </div>
           </div>
         </div>

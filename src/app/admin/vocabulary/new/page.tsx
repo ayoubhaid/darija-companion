@@ -7,12 +7,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { uploadAudioFile } from '@/lib/audio';
 import { ArrowLeft, Save, Upload, X } from 'lucide-react';
 import Link from 'next/link';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 
-const categories = ['greetings', 'numbers', 'family', 'food', 'phrases', 'travel', 'shopping', 'time', 'weather', 'other'];
-const difficulties = ['beginner', 'intermediate', 'advanced'];
+const CATEGORIES = ['greetings', 'numbers', 'family', 'food', 'phrases', 'travel', 'shopping', 'time', 'weather', 'other'];
+const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
+
+const S = {
+  label: { display: 'block', fontSize: 11, fontWeight: 600, color: '#5a6880', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: 6 },
+  input: { background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 9, color: '#dce4f0', fontSize: 13, padding: '9px 12px', outline: 'none', width: '100%' } as React.CSSProperties,
+  card: { background: '#0c0e16', border: '1px solid #1e2130', borderRadius: 14, padding: '20px 22px' } as React.CSSProperties,
+};
 
 export default function NewVocabularyPage() {
   const router = useRouter();
@@ -22,220 +25,129 @@ export default function NewVocabularyPage() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const [formData, setFormData] = useState({
-    word: '',
-    transliteration: '',
-    translation: '',
-    arabic: '',
-    category: 'greetings',
-    difficulty: 'beginner',
-    example: '',
-    exampleTranslation: '',
-    audioUrl: '',
+  const [form, setForm] = useState({
+    word: '', transliteration: '', translation: '', arabic: '',
+    category: 'greetings', difficulty: 'beginner',
+    example: '', exampleTranslation: '', audioUrl: '',
   });
 
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Audio file must be less than 5MB');
-        return;
-      }
-      setAudioFile(file);
-      setAudioPreview(URL.createObjectURL(file));
-    }
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Audio file must be less than 5MB'); return; }
+    setAudioFile(file);
+    setAudioPreview(URL.createObjectURL(file));
   };
 
   const removeAudio = () => {
-    setAudioFile(null);
-    setAudioPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setAudioFile(null); setAudioPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     setSaving(true);
     try {
-      let audioUrl = formData.audioUrl;
-
+      let audioUrl = form.audioUrl;
       if (audioFile) {
         setUploading(true);
-        try {
-          audioUrl = await uploadAudioFile(audioFile, user.uid);
-          if (!audioUrl) {
-            throw new Error('Audio upload failed - no URL returned');
-          }
-        } catch (uploadError) {
-          console.error('Audio upload error:', uploadError);
-          alert(`Failed to upload audio: ${uploadError}`);
-          setUploading(false);
-          return;
-        }
+        try { audioUrl = await uploadAudioFile(audioFile, user.uid) || ''; }
+        catch (err) { alert(`Audio upload failed: ${err}`); setUploading(false); return; }
         setUploading(false);
       }
-
-      const vocabularyData = {
-        ...formData,
-        audioUrl,
-      };
-
-      await createVocabulary(vocabularyData, user.uid, user.displayName || 'Admin');
+      await createVocabulary({ ...form, audioUrl }, user.uid, user.displayName || 'Admin');
       router.push('/admin/vocabulary');
-    } catch (error) {
-      console.error('Error saving vocabulary:', error);
-      alert('Failed to save');
-    } finally {
-      setSaving(false);
-    }
+    } catch { alert('Failed to save'); }
+    finally { setSaving(false); }
   };
 
   return (
-    <div>
-      <div className="flex items-center mb-6">
-        <Link href="/admin/vocabulary" className="mr-4">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Link href="/admin/vocabulary" style={{ display: 'flex', padding: 6, background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 8, color: '#5a6880', textDecoration: 'none' }}>
+          <ArrowLeft size={16} />
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Add New Word</h1>
-        </div>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#f0f4ff' }}>Add New Word</h1>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="max-w-2xl">
-          <Card>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Word (Darija)"
-                  value={formData.word}
-                  onChange={(e) => setFormData({ ...formData, word: e.target.value })}
-                  placeholder="e.g., Salam"
-                  required
-                />
-                <Input
-                  label="Arabic Script"
-                  value={formData.arabic}
-                  onChange={(e) => setFormData({ ...formData, arabic: e.target.value })}
-                  placeholder="e.g., سلام"
-                  className="arabic-text"
-                  dir="rtl"
-                />
+        <div style={{ maxWidth: 640 }}>
+          <div style={S.card}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={S.label}>Word (Darija) *</label>
+                  <input required value={form.word} onChange={e => setForm({ ...form, word: e.target.value })} placeholder="e.g., Salam" style={S.input} />
+                </div>
+                <div>
+                  <label style={S.label}>Arabic Script</label>
+                  <input value={form.arabic} onChange={e => setForm({ ...form, arabic: e.target.value })} placeholder="e.g., سلام" dir="rtl" style={{ ...S.input, fontFamily: 'serif' }} />
+                </div>
               </div>
-
-              <Input
-                label="Transliteration"
-                value={formData.transliteration}
-                onChange={(e) => setFormData({ ...formData, transliteration: e.target.value })}
-                placeholder="Phonetic spelling"
-              />
-
-              <Input
-                label="Translation (English)"
-                value={formData.translation}
-                onChange={(e) => setFormData({ ...formData, translation: e.target.value })}
-                placeholder="e.g., Hello/Peace"
-                required
-              />
+              <div>
+                <label style={S.label}>Transliteration</label>
+                <input value={form.transliteration} onChange={e => setForm({ ...form, transliteration: e.target.value })} placeholder="Phonetic spelling" style={S.input} />
+              </div>
+              <div>
+                <label style={S.label}>Translation (English) *</label>
+                <input required value={form.translation} onChange={e => setForm({ ...form, translation: e.target.value })} placeholder="e.g., Hello/Peace" style={S.input} />
+              </div>
 
               {/* Audio Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Audio Pronunciation (optional)
-                </label>
-                
-                {audioPreview || formData.audioUrl ? (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <audio controls className="flex-1 h-10">
-                      <source src={audioPreview || formData.audioUrl} />
-                      Your browser does not support audio.
+                <label style={S.label}>Audio Pronunciation (optional)</label>
+                {audioPreview || form.audioUrl ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 9 }}>
+                    <audio controls style={{ flex: 1, height: 36 }}>
+                      <source src={audioPreview || form.audioUrl} />
                     </audio>
-                    <button
-                      type="button"
-                      onClick={removeAudio}
-                      className="p-2 text-gray-500 hover:text-red-500"
-                    >
-                      <X className="w-5 h-5" />
+                    <button type="button" onClick={removeAudio} style={{ background: 'transparent', border: 'none', color: '#5a6880', cursor: 'pointer', display: 'flex' }}>
+                      <X size={16} />
                     </button>
                   </div>
                 ) : (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="audio/*"
-                      onChange={handleAudioChange}
-                      className="hidden"
-                    />
-                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">
-                      Click to upload audio file (MP3, WAV, max 5MB)
-                    </p>
+                  <div onClick={() => fileInputRef.current?.click()} style={{ border: '2px dashed #2a2d3a', borderRadius: 9, padding: '24px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s' }}>
+                    <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleAudioChange} style={{ display: 'none' }} />
+                    <Upload size={24} style={{ color: '#3a4050', margin: '0 auto 8px' }} />
+                    <p style={{ fontSize: 12, color: '#5a6880', margin: 0 }}>Click to upload audio (MP3, WAV, max 5MB)</p>
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-                    ))}
+                  <label style={S.label}>Category</label>
+                  <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} style={{ ...S.input, cursor: 'pointer' }}>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
-                  <select
-                    value={formData.difficulty}
-                    onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    {difficulties.map(diff => (
-                      <option key={diff} value={diff}>{diff.charAt(0).toUpperCase() + diff.slice(1)}</option>
-                    ))}
+                  <label style={S.label}>Difficulty</label>
+                  <select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value })} style={{ ...S.input, cursor: 'pointer' }}>
+                    {DIFFICULTIES.map(d => <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
                   </select>
                 </div>
               </div>
-
-              <Input
-                label="Example Sentence"
-                value={formData.example}
-                onChange={(e) => setFormData({ ...formData, example: e.target.value })}
-                placeholder="e.g., Salam, kif dayr?"
-              />
-
-              <Input
-                label="Example Translation"
-                value={formData.exampleTranslation}
-                onChange={(e) => setFormData({ ...formData, exampleTranslation: e.target.value })}
-                placeholder="e.g., Hello, how are you?"
-              />
+              <div>
+                <label style={S.label}>Example Sentence</label>
+                <input value={form.example} onChange={e => setForm({ ...form, example: e.target.value })} placeholder="e.g., Salam, kif dayr?" style={S.input} />
+              </div>
+              <div>
+                <label style={S.label}>Example Translation</label>
+                <input value={form.exampleTranslation} onChange={e => setForm({ ...form, exampleTranslation: e.target.value })} placeholder="e.g., Hello, how are you?" style={S.input} />
+              </div>
             </div>
 
-            <div className="flex justify-end space-x-3 mt-6">
-              <Link href="/admin/vocabulary">
-                <Button variant="outline" type="button">Cancel</Button>
+            <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
+              <Link href="/admin/vocabulary" style={{ textDecoration: 'none' }}>
+                <button type="button" style={{ padding: '9px 20px', background: 'transparent', border: '1px solid #2a2d3a', borderRadius: 9, color: '#5a6880', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
               </Link>
-              <Button type="submit" loading={saving || uploading} disabled={uploading}>
-                <Save className="w-5 h-5 mr-2" />
-                {uploading ? 'Uploading...' : saving ? 'Saving...' : 'Save Word'}
-              </Button>
+              <button type="submit" disabled={saving || uploading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', background: 'linear-gradient(135deg,#10b981,#059669)', border: 'none', borderRadius: 9, color: 'white', fontSize: 13, fontWeight: 700, cursor: (saving || uploading) ? 'not-allowed' : 'pointer', opacity: (saving || uploading) ? 0.7 : 1 }}>
+                <Save size={14} /> {uploading ? 'Uploading…' : saving ? 'Saving…' : 'Save Word'}
+              </button>
             </div>
-          </Card>
+          </div>
         </div>
       </form>
     </div>

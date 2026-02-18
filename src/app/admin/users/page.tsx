@@ -4,159 +4,134 @@ import { useEffect, useState } from 'react';
 import { getAllUsers, setUserAdminStatus } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { UserProfile } from '@/types';
-import { Users, Search, Shield, ShieldCheck } from 'lucide-react';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
+import { Search, Shield, ShieldCheck, Users } from 'lucide-react';
+
+const S = {
+  card: { background: '#0c0e16', border: '1px solid #1e2130', borderRadius: 14, overflow: 'hidden' } as React.CSSProperties,
+  input: { background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 9, color: '#dce4f0', fontSize: 13, padding: '8px 12px', outline: 'none', width: '100%' } as React.CSSProperties,
+  th: { padding: '10px 16px', fontSize: 11, fontWeight: 600, color: '#3a4050', textTransform: 'uppercase' as const, letterSpacing: '0.08em', textAlign: 'left' as const, borderBottom: '1px solid #1e2130' },
+  td: { padding: '12px 16px', fontSize: 13, borderBottom: '1px solid #0f1117', verticalAlign: 'middle' as const },
+};
 
 export default function AdminUsersPage() {
   const { user } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState('');
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await getAllUsers();
-        setUsers(data);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
+    getAllUsers().then(setUsers).catch(console.error).finally(() => setLoading(false));
   }, []);
 
-  const handleToggleAdmin = async (userId: string, currentStatus: boolean) => {
+  const handleToggleAdmin = async (userId: string, current: boolean) => {
     if (!user) return;
-    if (userId === user.uid) {
-      alert("You cannot remove your own admin status!");
-      return;
-    }
-
+    if (userId === user.uid) { alert("You cannot remove your own admin status!"); return; }
     setUpdating(userId);
     try {
-      await setUserAdminStatus(userId, !currentStatus, user.uid, user.displayName || 'Admin');
-      setUsers(users.map(u => u.id === userId ? { ...u, isAdmin: !currentStatus } : u));
-    } catch (error) {
-      console.error('Error updating user:', error);
-      alert('Failed to update user');
-    } finally {
-      setUpdating(null);
-    }
+      await setUserAdminStatus(userId, !current, user.uid, user.displayName || 'Admin');
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isAdmin: !current } : u));
+    } catch { alert('Failed to update user'); }
+    finally { setUpdating(null); }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = users.filter(u =>
+    u.displayName?.toLowerCase().includes(search.toLowerCase()) ||
+    u.email?.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid #10b981', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-        <p className="text-gray-600">Manage users and admin access</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Header */}
+      <div>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#f0f4ff' }}>Users</h1>
+        <p style={{ margin: '4px 0 0', fontSize: 13, color: '#5a6880' }}>Manage users and admin access</p>
       </div>
 
-      <Card className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
+      {/* Stats row */}
+      <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ padding: '12px 18px', background: '#0c0e16', border: '1px solid #1e2130', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Users size={16} style={{ color: '#fbbf24' }} />
+          <span style={{ fontSize: 13, color: '#8b9cb8' }}>{users.length} Total Users</span>
         </div>
-      </Card>
+        <div style={{ padding: '12px 18px', background: '#0c0e16', border: '1px solid #1e2130', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <ShieldCheck size={16} style={{ color: '#6ee7b7' }} />
+          <span style={{ fontSize: 13, color: '#8b9cb8' }}>{users.filter(u => u.isAdmin).length} Admins</span>
+        </div>
+      </div>
 
-      <Card>
-        {filteredUsers.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No users found</p>
-          </div>
+      {/* Search */}
+      <div style={{ position: 'relative' }}>
+        <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#3a4050' }} />
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search users…" style={{ ...S.input, paddingLeft: 32 }} />
+      </div>
+
+      {/* Table */}
+      <div style={S.card}>
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 60, color: '#5a6880', fontSize: 14 }}>No users found.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">User</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Level</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">XP</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Admin</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((userProfile) => (
-                  <tr key={userProfile.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                          <span className="text-primary-600 font-medium">
-                            {(userProfile.displayName || userProfile.email || 'U')[0].toUpperCase()}
-                          </span>
-                        </div>
-                        <span className="ml-3 font-medium text-gray-900">
-                          {userProfile.displayName || 'Anonymous'}
-                        </span>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={S.th}>User</th>
+                <th style={S.th}>Email</th>
+                <th style={S.th}>Level</th>
+                <th style={S.th}>XP</th>
+                <th style={{ ...S.th, textAlign: 'center' }}>Admin</th>
+                <th style={{ ...S.th, textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(u => (
+                <tr key={u.id}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#0f1117')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <td style={S.td}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 34, height: 34, borderRadius: 9, background: 'linear-gradient(135deg,#6ee7b7,#7dd3fc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#0a0c14', flexShrink: 0 }}>
+                        {(u.displayName || u.email || 'U')[0].toUpperCase()}
                       </div>
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">{userProfile.email}</td>
-                    <td className="py-3 px-4">
-                      <Badge variant="primary">Level {userProfile.level || 1}</Badge>
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">{userProfile.xp || 0} XP</td>
-                    <td className="py-3 px-4 text-center">
-                      {userProfile.isAdmin ? (
-                        <ShieldCheck className="w-5 h-5 text-green-500 mx-auto" />
-                      ) : (
-                        <Shield className="w-5 h-5 text-gray-400 mx-auto" />
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <Button
-                        variant={userProfile.isAdmin ? 'danger' : 'outline'}
-                        size="sm"
-                        onClick={() => handleToggleAdmin(userProfile.id, userProfile.isAdmin || false)}
-                        disabled={updating === userProfile.id || userProfile.id === user?.uid}
-                      >
-                        {userProfile.isAdmin ? 'Remove Admin' : 'Make Admin'}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <span style={{ fontWeight: 600, color: '#dce4f0' }}>{u.displayName || 'Anonymous'}</span>
+                    </div>
+                  </td>
+                  <td style={{ ...S.td, color: '#8b9cb8' }}>{u.email}</td>
+                  <td style={S.td}>
+                    <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: '#1a2535', color: '#7dd3fc', border: '1px solid #2a3a50' }}>Level {u.level || 1}</span>
+                  </td>
+                  <td style={{ ...S.td, color: '#5a6880' }}>{u.xp || 0} XP</td>
+                  <td style={{ ...S.td, textAlign: 'center' }}>
+                    {u.isAdmin
+                      ? <ShieldCheck size={16} style={{ color: '#6ee7b7', margin: '0 auto' }} />
+                      : <Shield size={16} style={{ color: '#3a4050', margin: '0 auto' }} />}
+                  </td>
+                  <td style={{ ...S.td, textAlign: 'right' }}>
+                    <button
+                      onClick={() => handleToggleAdmin(u.id, u.isAdmin || false)}
+                      disabled={updating === u.id || u.id === user?.uid}
+                      style={{
+                        padding: '5px 14px', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: (updating === u.id || u.id === user?.uid) ? 'not-allowed' : 'pointer',
+                        opacity: (updating === u.id || u.id === user?.uid) ? 0.5 : 1,
+                        ...(u.isAdmin
+                          ? { background: 'rgba(239,68,68,0.12)', border: '1px solid #ef4444', color: '#fca5a5' }
+                          : { background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', color: '#6ee7b7' })
+                      }}
+                    >
+                      {u.isAdmin ? 'Remove Admin' : 'Make Admin'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
-      </Card>
-
-      <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
-        <div className="flex items-center space-x-4">
-          <span className="flex items-center">
-            <ShieldCheck className="w-4 h-4 mr-1 text-green-500" />
-            {users.filter(u => u.isAdmin).length} Admins
-          </span>
-          <span className="flex items-center">
-            <Users className="w-4 h-4 mr-1" />
-            {users.length} Total Users
-          </span>
-        </div>
       </div>
     </div>
   );
