@@ -7,8 +7,9 @@ import { createLesson } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
+import { Block, serializeBlocks } from '@/components/editor/LessonBuilder';
 
-const TipTapEditor = dynamic(() => import('@/components/editor/TipTapEditor'), { ssr: false });
+const LessonBuilder = dynamic(() => import('@/components/editor/LessonBuilder'), { ssr: false });
 
 const S = {
   label: { display: 'block', fontSize: 11, fontWeight: 600, color: '#5a6880', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: 6 },
@@ -20,7 +21,7 @@ export default function NewLessonPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
-  const [editorContent, setEditorContent] = useState('');
+  const [blocks, setBlocks] = useState<Block[]>([]);
   const [form, setForm] = useState({
     title: '', description: '',
     difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
@@ -28,25 +29,42 @@ export default function NewLessonPage() {
     duration: 15, topic: '', tags: '', imageUrl: '',
   });
 
-  const handleEditorChange = useCallback((html: string) => setEditorContent(html), []);
+  const handleBlocksChange = useCallback((b: Block[]) => setBlocks(b), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
     try {
+      const blocksJson = serializeBlocks(blocks);
+      // Also generate a simple HTML summary for legacy compatibility
+      const htmlSummary = blocks.map(b => {
+        if (b.type === 'text') return b.html || '';
+        if (b.type === 'image' && b.src) return `<img src="${b.src}" alt="${b.alt || ''}" />`;
+        if (b.type === 'callout') return `<blockquote><strong>${b.calloutTitle}</strong><p>${b.calloutText}</p></blockquote>`;
+        return '';
+      }).join('\n');
+
       await createLesson({
-        title: form.title, description: form.description,
-        contentJson: editorContent, contentHtml: editorContent,
-        difficulty: form.difficulty, status: form.status,
-        duration: form.duration, topic: form.topic,
+        title: form.title,
+        description: form.description,
+        contentJson: blocksJson,
+        contentHtml: htmlSummary,
+        difficulty: form.difficulty,
+        status: form.status,
+        duration: form.duration,
+        topic: form.topic,
         tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
         imageUrl: form.imageUrl,
         content: { vocabulary: [], sentences: [], exercises: [] },
       } as any, user.uid, user.displayName || 'Admin');
       router.push('/admin/lessons');
-    } catch { alert('Failed to create lesson'); }
-    finally { setSaving(false); }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create lesson');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -58,7 +76,7 @@ export default function NewLessonPage() {
         </Link>
         <div>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#f0f4ff' }}>New Lesson</h1>
-          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#5a6880' }}>Create a new lesson</p>
+          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#5a6880' }}>Build your lesson with rich multimedia blocks</p>
         </div>
       </div>
 
@@ -66,27 +84,30 @@ export default function NewLessonPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, alignItems: 'start' }}>
           {/* Main content */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Meta */}
             <div style={S.card}>
-              <h2 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#dce4f0' }}>Lesson Content</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <h2 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#dce4f0' }}>Lesson Info</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
                   <label style={S.label}>Title *</label>
                   <input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Enter lesson title" style={S.input} />
                 </div>
                 <div>
                   <label style={S.label}>Description</label>
-                  <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Brief description" rows={3} style={{ ...S.input, resize: 'vertical' }} />
-                </div>
-                <div>
-                  <label style={S.label}>Content</label>
-                  <TipTapEditor onChange={handleEditorChange} placeholder="Start writing your lesson content…" />
+                  <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Brief description shown in lesson list" rows={2} style={{ ...S.input, resize: 'vertical' }} />
                 </div>
               </div>
+            </div>
+
+            {/* Block builder */}
+            <div style={S.card}>
+              <h2 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#dce4f0' }}>Lesson Content</h2>
+              <LessonBuilder onChange={handleBlocksChange} />
             </div>
           </div>
 
           {/* Sidebar */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 80 }}>
             <div style={S.card}>
               <h2 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: '#dce4f0' }}>Settings</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -118,10 +139,16 @@ export default function NewLessonPage() {
                   <input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="Comma-separated" style={S.input} />
                 </div>
                 <div>
-                  <label style={S.label}>Image URL</label>
+                  <label style={S.label}>Cover Image URL</label>
                   <input value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://…" style={S.input} />
                 </div>
               </div>
+            </div>
+
+            {/* Block count summary */}
+            <div style={{ ...S.card, padding: '14px 18px' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#5a6880', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Content Summary</div>
+              <div style={{ fontSize: 13, color: '#8b9cb8' }}>{blocks.length} block{blocks.length !== 1 ? 's' : ''} total</div>
             </div>
 
             {/* Actions */}
