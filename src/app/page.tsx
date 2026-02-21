@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import ZelligeBackground from '@/components/ZelijBackground';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -164,6 +165,8 @@ function GuestLanding() {
       position: 'relative',
       overflowX: 'hidden'
     }}>
+      {/* Zellige Background */}
+      <ZelligeBackground />
       {/* Grid pattern */}
       <div style={{
         position: 'fixed',

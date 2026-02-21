@@ -37,18 +37,34 @@ import {
 
 function PracticeIntro({ onStart, onStartTyping, onStartSoukRush }: { onStart: () => void; onStartTyping: () => void; onStartSoukRush: () => void }) {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
-      <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-3xl shadow-glow-md mb-8">
-          <SparklesIcon className="w-10 h-10 text-white" />
+    <div className="min-h-screen" style={{
+      background: 'radial-gradient(ellipse at 20% 0%, #2a1505 0%, #0e0804 60%), radial-gradient(ellipse at 80% 100%, #12060e 0%, transparent 50%)',
+      position: 'relative'
+    }}>
+      {/* Grid pattern */}
+      <div style={{
+        position: 'fixed', inset: 0,
+        backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,169,110,0.025) 60px, rgba(200,169,110,0.025) 61px), repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(200,169,110,0.025) 60px, rgba(200,169,110,0.025) 61px)`,
+        pointerEvents: 'none', zIndex: 0
+      }} />
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(80px,10vw,120px) 16px 48px', position: 'relative', zIndex: 1 }}>
+        <div className="text-center mb-12">
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 80, height: 80, borderRadius: 24,
+            background: 'linear-gradient(135deg, #c8a96e, #a88050)',
+            marginBottom: 32, boxShadow: '0 8px 32px rgba(200,169,110,0.3)'
+          }}>
+            <SparklesIcon className="w-10 h-10 text-white" />
+          </div>
+          
+          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 700, color: '#f0e6d0', marginBottom: 16 }}>
+            Daily Practice
+          </h1>
+          <p style={{ fontSize: 18, color: '#8a7a6e', maxWidth: 500, margin: '0 auto 32px' }}>
+            Train your vocabulary with spaced repetition. The more you practice, the better you remember!
+          </p>
         </div>
-        
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-4">
-          Daily Practice
-        </h1>
-        <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-8">
-          Train your vocabulary with spaced repetition. The more you practice, the better you remember!
-        </p>
 
         {/* Practice Mode Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -120,7 +136,7 @@ function PracticeIntro({ onStart, onStartTyping, onStartSoukRush }: { onStart: (
           </ul>
         </Card>
 
-        <Button onClick={onStart} size="lg" className="w-full">
+        <Button onClick={onStart} size="lg" className="w-full" style={{ maxWidth: 320, margin: '0 auto' }}>
           Start Practice Session
         </Button>
       </div>
@@ -147,16 +163,30 @@ function SessionComplete({
   const message = getMessage();
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
-      <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="min-h-screen" style={{
+      background: 'radial-gradient(ellipse at 20% 0%, #2a1505 0%, #0e0804 60%), radial-gradient(ellipse at 80% 100%, #12060e 0%, transparent 50%)',
+      position: 'relative'
+    }}>
+      {/* Grid pattern */}
+      <div style={{
+        position: 'fixed', inset: 0,
+        backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,169,110,0.025) 60px, rgba(200,169,110,0.025) 61px), repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(200,169,110,0.025) 60px, rgba(200,169,110,0.025) 61px)`,
+        pointerEvents: 'none', zIndex: 0
+      }} />
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(80px,10vw,120px) 16px 48px', position: 'relative', zIndex: 1 }}>
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-primary to-accent rounded-full shadow-glow-lg mb-6">
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 96, height: 96, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #c8a96e, #a88050)',
+            marginBottom: 24, boxShadow: '0 8px 32px rgba(200,169,110,0.3)'
+          }}>
             <TrophyIcon className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(28px, 5vw, 36px)', fontWeight: 700, color: '#f0e6d0', marginBottom: 8 }}>
             {message.text}
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">{message.desc}</p>
+          <p style={{ color: '#8a7a6e' }}>{message.desc}</p>
         </div>
 
         <Card padding="lg" className="mb-8">
