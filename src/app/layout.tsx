@@ -23,7 +23,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <body className="min-h-screen">
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -3,7 +3,6 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import AudioPlayer from '@/components/ui/AudioPlayer';
@@ -17,7 +16,6 @@ import {
   MagnifyingGlassIcon,
   Squares2X2Icon,
   ViewColumnsIcon,
-  ClockIcon,
   ArrowPathIcon,
   PlayIcon,
   PauseIcon,
@@ -57,27 +55,33 @@ interface SessionSummaryProps {
 function SessionSummary({ total, known, learning, onRestart, onReviewLearning }: SessionSummaryProps) {
   const accuracy = total > 0 ? Math.round((known / total) * 100) : 0;
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] text-center animate-fade-in-up">
-      <div className="text-6xl mb-4">{accuracy >= 80 ? '🎉' : accuracy >= 50 ? '👍' : '💪'}</div>
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Session Complete!</h2>
-      <p className="text-zinc-500 mb-8">You reviewed {total} cards</p>
+    <div style={{
+      background: 'rgba(26,21,8,0.6)',
+      border: '1px solid rgba(200,169,110,0.2)',
+      borderRadius: 18,
+      padding: 40,
+      textAlign: 'center'
+    }}>
+      <div style={{ fontSize: 64, marginBottom: 16 }}>{accuracy >= 80 ? '🎉' : accuracy >= 50 ? '👍' : '💪'}</div>
+      <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, fontWeight: 700, color: '#f0e6d0', marginBottom: 8 }}>Session Complete!</h2>
+      <p style={{ color: '#8a7a6e', marginBottom: 32 }}>You reviewed {total} cards</p>
 
-      <div className="grid grid-cols-3 gap-4 mb-8 w-full max-w-sm">
-        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4">
-          <div className="text-2xl font-bold text-emerald-600">{known}</div>
-          <div className="text-xs text-emerald-600 font-medium mt-1">Known</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32, maxWidth: 320, margin: '0 auto 32px' }}>
+        <div style={{ background: 'rgba(16,185,129,0.1)', borderRadius: 12, padding: 16, border: '1px solid rgba(16,185,129,0.2)' }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#10b981' }}>{known}</div>
+          <div style={{ fontSize: 12, color: '#10b981', fontWeight: 500, marginTop: 4 }}>Known</div>
         </div>
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
-          <div className="text-2xl font-bold text-yellow-600">{learning}</div>
-          <div className="text-xs text-yellow-600 font-medium mt-1">Learning</div>
+        <div style={{ background: 'rgba(245,158,11,0.1)', borderRadius: 12, padding: 16, border: '1px solid rgba(245,158,11,0.2)' }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#f59e0b' }}>{learning}</div>
+          <div style={{ fontSize: 12, color: '#f59e0b', fontWeight: 500, marginTop: 4 }}>Learning</div>
         </div>
-        <div className="bg-primary/10 rounded-xl p-4">
-          <div className="text-2xl font-bold text-primary">{accuracy}%</div>
-          <div className="text-xs text-primary font-medium mt-1">Accuracy</div>
+        <div style={{ background: 'rgba(200,169,110,0.1)', borderRadius: 12, padding: 16, border: '1px solid rgba(200,169,110,0.2)' }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#c8a96e' }}>{accuracy}%</div>
+          <div style={{ fontSize: 12, color: '#c8a96e', fontWeight: 500, marginTop: 4 }}>Accuracy</div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div style={{ display: 'flex', flexDirection: 'row', gap: 12, justifyContent: 'center' }}>
         {learning > 0 && (
           <Button variant="outline" onClick={onReviewLearning} className="flex items-center gap-2">
             <ArrowPathIcon className="w-4 h-4" />
@@ -251,7 +255,6 @@ export default function VocabularyPage() {
     setCurrentIndex(0);
     setIsFlipped(false);
     setSessionDone(false);
-    // Filter to only learning words - we'll just restart for now
   };
 
   const resetProgress = () => {
@@ -263,388 +266,587 @@ export default function VocabularyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 pt-20">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0e0804' }}>
+        <div className="animate-spin rounded-full h-10 w-10 border-2" style={{ borderColor: '#c8a96e', borderTopColor: 'transparent' }}></div>
       </div>
     );
   }
+
+  // Page container wrapper
+  const PageWrapper = ({ children }: { children: React.ReactNode }) => (
+    <div className="min-h-screen" style={{
+      background: 'radial-gradient(ellipse at 20% 0%, #2a1505 0%, #0e0804 60%), radial-gradient(ellipse at 80% 100%, #12060e 0%, transparent 50%)',
+      position: 'relative'
+    }}>
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundImage: `
+          repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,169,110,0.025) 60px, rgba(200,169,110,0.025) 61px),
+          repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(200,169,110,0.025) 60px, rgba(200,169,110,0.025) 61px)
+        `,
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: 'clamp(80px,10vw,120px) clamp(16px,4vw,40px) 60px', position: 'relative', zIndex: 1 }}>
+        {children}
+      </div>
+    </div>
+  );
 
   if (filteredVocab.length === 0 && !loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Vocabulary Flashcards</h1>
-          </div>
-          <div className="relative mb-6">
-            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Search vocabulary..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-          </div>
-          <div className="text-center py-20">
-            <p className="text-zinc-500">No vocabulary found</p>
-          </div>
+      <PageWrapper>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(32px,6vw,48px)', fontWeight: 700, color: '#f0e6d0', marginBottom: 8 }}>Vocabulary Flashcards</h1>
+          <p style={{ color: '#8a7a6e' }}>Master Moroccan Darija one card at a time</p>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-24 md:pb-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-1">Vocabulary Flashcards</h1>
-            <p className="text-zinc-500 text-sm">
-              {knownWords.size} known · {learningWords.size} learning · {vocabulary.length - knownWords.size - learningWords.size} new
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* View toggle */}
-            <div className="flex items-center bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-1">
-              <button
-                onClick={() => setViewMode('flashcard')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'flashcard' ? 'bg-primary text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
-                title="Flashcard view"
-              >
-                <ViewColumnsIcon className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-primary text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
-                title="Grid view"
-              >
-                <Squares2X2Icon className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-4">
-          <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+        
+        <div style={{ position: 'relative', marginBottom: 24 }}>
+          <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#5a4a3e' }} />
           <input
             type="text"
             placeholder="Search vocabulary..."
             value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentIndex(0);
-              setIsFlipped(false);
-              setSessionDone(false);
-            }}
-            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 text-zinc-900 dark:text-white"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="input"
+            style={{ paddingLeft: 48 }}
           />
         </div>
-
-        {/* Category Filters */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-          <button
-            onClick={() => { setCategoryFilter('all'); setCurrentIndex(0); setIsFlipped(false); setSessionDone(false); }}
-            className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-              categoryFilter === 'all'
-                ? 'bg-primary text-white shadow-glow-sm'
-                : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700'
-            }`}
-          >
-            All ({vocabulary.length})
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => { setCategoryFilter(cat); setCurrentIndex(0); setIsFlipped(false); setSessionDone(false); }}
-              className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                categoryFilter === cat
-                  ? 'bg-primary text-white shadow-glow-sm'
-                  : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700'
-              }`}
-            >
-              {cat.charAt(0).toUpperCase() + cat.slice(1)} ({vocabulary.filter((v) => v.category === cat).length})
-            </button>
-          ))}
+        
+        <div style={{ textAlign: 'center', padding: 80 }}>
+          <p style={{ color: '#8a7a6e' }}>No vocabulary found</p>
         </div>
+      </PageWrapper>
+    );
+  }
 
-        {/* ===== FLASHCARD VIEW ===== */}
-        {viewMode === 'flashcard' && (
-          <>
-            {sessionDone ? (
-              <Card padding="lg">
-                <SessionSummary
-                  total={sessionStats.total}
-                  known={sessionStats.known}
-                  learning={sessionStats.learning}
-                  onRestart={handleRestart}
-                  onReviewLearning={handleReviewLearning}
+  return (
+    <PageWrapper>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(32px,6vw,48px)', fontWeight: 700, color: '#f0e6d0', marginBottom: 4 }}>Vocabulary Flashcards</h1>
+          <p style={{ color: '#8a7a6e', fontSize: 14 }}>
+            {knownWords.size} known · {learningWords.size} learning · {vocabulary.length - knownWords.size - learningWords.size} new
+          </p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* View toggle */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            background: 'rgba(26,21,8,0.6)', 
+            border: '1px solid rgba(200,169,110,0.2)', 
+            borderRadius: 12, 
+            padding: 4 
+          }}>
+            <button
+              onClick={() => setViewMode('flashcard')}
+              style={{
+                padding: 8,
+                borderRadius: 8,
+                background: viewMode === 'flashcard' ? 'rgba(200,169,110,0.2)' : 'transparent',
+                color: viewMode === 'flashcard' ? '#c8a96e' : '#8a7a6e',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              title="Flashcard view"
+            >
+              <ViewColumnsIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              style={{
+                padding: 8,
+                borderRadius: 8,
+                background: viewMode === 'grid' ? 'rgba(200,169,110,0.2)' : 'transparent',
+                color: viewMode === 'grid' ? '#c8a96e' : '#8a7a6e',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              title="Grid view"
+            >
+              <Squares2X2Icon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div style={{ position: 'relative', marginBottom: 16 }}>
+        <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#5a4a3e' }} />
+        <input
+          type="text"
+          placeholder="Search vocabulary..."
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentIndex(0);
+            setIsFlipped(false);
+            setSessionDone(false);
+          }}
+          className="input"
+          style={{ paddingLeft: 48 }}
+        />
+      </div>
+
+      {/* Category Filters */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 24, overflowX: 'auto', paddingBottom: 8 }}>
+        <button
+          onClick={() => { setCategoryFilter('all'); setCurrentIndex(0); setIsFlipped(false); setSessionDone(false); }}
+          style={{
+            padding: '8px 16px',
+            borderRadius: 12,
+            fontSize: 14,
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+            background: categoryFilter === 'all' ? 'rgba(200,169,110,0.15)' : 'rgba(26,21,8,0.6)',
+            color: categoryFilter === 'all' ? '#c8a96e' : '#8a7a6e',
+            border: `1px solid ${categoryFilter === 'all' ? 'rgba(200,169,110,0.4)' : 'rgba(200,169,110,0.15)'}`,
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          All ({vocabulary.length})
+        </button>
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => { setCategoryFilter(cat); setCurrentIndex(0); setIsFlipped(false); setSessionDone(false); }}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 12,
+              fontSize: 14,
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              background: categoryFilter === cat ? 'rgba(200,169,110,0.15)' : 'rgba(26,21,8,0.6)',
+              color: categoryFilter === cat ? '#c8a96e' : '#8a7a6e',
+              border: `1px solid ${categoryFilter === cat ? 'rgba(200,169,110,0.4)' : 'rgba(200,169,110,0.15)'}`,
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            {cat.charAt(0).toUpperCase() + cat.slice(1)} ({vocabulary.filter((v) => v.category === cat).length})
+          </button>
+        ))}
+      </div>
+
+      {/* ===== FLASHCARD VIEW ===== */}
+      {viewMode === 'flashcard' && (
+        <>
+          {sessionDone ? (
+            <SessionSummary
+              total={sessionStats.total}
+              known={sessionStats.known}
+              learning={sessionStats.learning}
+              onRestart={handleRestart}
+              onReviewLearning={handleReviewLearning}
+            />
+          ) : (
+            <>
+              {/* Progress bar + controls */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <span style={{ fontSize: 14, color: '#8a7a6e' }}>
+                  {currentIndex + 1} / {filteredVocab.length}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {/* Auto-advance toggle */}
+                  <button
+                    onClick={() => setAutoAdvance((a) => !a)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '6px 12px',
+                      borderRadius: 8,
+                      fontSize: 12,
+                      fontWeight: 500,
+                      background: autoAdvance ? 'rgba(200,169,110,0.1)' : 'rgba(26,21,8,0.6)',
+                      color: autoAdvance ? '#c8a96e' : '#8a7a6e',
+                      border: `1px solid ${autoAdvance ? 'rgba(200,169,110,0.3)' : 'rgba(200,169,110,0.15)'}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    title="Auto-advance mode"
+                  >
+                    {autoAdvance ? <PauseIcon className="w-3.5 h-3.5" /> : <PlayIcon className="w-3.5 h-3.5" />}
+                    Auto
+                  </button>
+                  <span style={{ fontSize: 12, color: '#5a4a3e' }} className="hidden sm:block">
+                    Space=flip · ←=learning · →=known
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div style={{ height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 100, marginBottom: 24, overflow: 'hidden' }}>
+                <div
+                  style={{ 
+                    height: '100%', 
+                    background: 'linear-gradient(90deg, #c8a96e, #d4845a)', 
+                    borderRadius: 100, 
+                    transition: 'width 0.3s',
+                    width: `${((currentIndex + 1) / filteredVocab.length) * 100}%`
+                  }}
                 />
-              </Card>
-            ) : (
-              <>
-                {/* Progress bar + controls */}
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-zinc-500">
-                    {currentIndex + 1} / {filteredVocab.length}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    {/* Auto-advance toggle */}
-                    <button
-                      onClick={() => setAutoAdvance((a) => !a)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                        autoAdvance
-                          ? 'bg-primary/10 text-primary border border-primary/30'
-                          : 'bg-white dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700'
-                      }`}
-                      title="Auto-advance mode"
-                    >
-                      {autoAdvance ? <PauseIcon className="w-3.5 h-3.5" /> : <PlayIcon className="w-3.5 h-3.5" />}
-                      Auto
-                    </button>
-                    <span className="text-xs text-zinc-400 hidden sm:block">
-                      Space=flip · ←=learning · →=known
-                    </span>
-                  </div>
-                </div>
+              </div>
 
-                {/* Progress bar */}
-                <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full mb-6 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-300"
-                    style={{ width: `${((currentIndex + 1) / filteredVocab.length) * 100}%` }}
-                  />
-                </div>
-
-                {/* Flashcard */}
+              {/* Flashcard */}
+              <div
+                ref={cardRef}
+                style={{ marginBottom: 24, cursor: 'pointer', userSelect: 'none' }}
+                onClick={() => setIsFlipped((f) => !f)}
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && setIsFlipped((f) => !f)}
+              >
                 <div
-                  ref={cardRef}
-                  className="mb-6 cursor-pointer select-none"
-                  onClick={() => setIsFlipped((f) => !f)}
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && setIsFlipped((f) => !f)}
+                  style={{
+                    background: 'rgba(26,21,8,0.6)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(200,169,110,0.2)',
+                    borderRadius: 18,
+                    padding: 32,
+                    minHeight: 320,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
                 >
-                  <Card
-                    variant="interactive"
-                    className="min-h-[320px] flex flex-col items-center justify-center p-8 relative overflow-hidden"
-                  >
-                    {/* Known/Learning indicator */}
-                    {currentCard && knownWords.has(currentCard.id) && (
-                      <div className="absolute top-4 right-4">
-                        <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-full">
-                          <CheckCircleIcon className="w-3.5 h-3.5" /> Known
-                        </span>
-                      </div>
-                    )}
-                    {currentCard && learningWords.has(currentCard.id) && (
-                      <div className="absolute top-4 right-4">
-                        <span className="flex items-center gap-1 text-xs font-medium text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-full">
-                          <BookmarkIcon className="w-3.5 h-3.5" /> Learning
-                        </span>
-                      </div>
-                    )}
+                  {/* Glow */}
+                  <div style={{
+                    position: 'absolute',
+                    top: -30,
+                    right: -30,
+                    width: 150,
+                    height: 150,
+                    borderRadius: '50%',
+                    background: '#c8a96e',
+                    opacity: 0.08,
+                    filter: 'blur(30px)'
+                  }} />
 
-                    {!isFlipped ? (
-                      <div className="text-center animate-fade-in">
-                        <Badge variant="primary" className="mb-4">{currentCard?.category}</Badge>
-                        <h2 className="text-4xl font-bold text-zinc-900 dark:text-white mb-3">
-                          {currentCard?.word}
-                        </h2>
-                        <p className="text-lg text-zinc-500 mb-3">{currentCard?.transliteration}</p>
-                        <p className="text-xl text-primary font-semibold">{currentCard?.translation}</p>
-                        {currentCard?.arabic && (
-                          <p className="text-2xl mt-4 arabic-text text-zinc-700 dark:text-zinc-300" dir="rtl">
-                            {currentCard.arabic}
-                          </p>
-                        )}
-                        {currentCard?.audioUrl && (
-                          <div className="mt-4 flex justify-center" onClick={(e) => e.stopPropagation()}>
-                            <AudioPlayer audioUrl={currentCard.audioUrl} />
-                          </div>
-                        )}
-                        <p className="text-xs text-zinc-400 mt-6">Click or press Space to flip</p>
-                      </div>
-                    ) : (
-                      <div className="text-center w-full animate-fade-in">
-                        <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">
-                          {currentCard?.word}
-                        </h2>
-                        {currentCard?.example ? (
-                          <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 mb-4 text-left">
-                            <p className="text-sm font-medium text-zinc-500 mb-2">Example:</p>
-                            <p className="text-zinc-700 dark:text-zinc-300 mb-2">{currentCard.example}</p>
-                            {currentCard.exampleTranslation && (
-                              <p className="text-sm text-zinc-500 italic">{currentCard.exampleTranslation}</p>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-zinc-500 mb-4">No example available</p>
-                        )}
-                        <p className="text-xs text-zinc-400">Use buttons or ← → keys to mark</p>
-                      </div>
-                    )}
-                  </Card>
-                </div>
-
-                {/* Navigation + Action Buttons */}
-                <div className="flex items-center justify-between mb-4">
-                  <button
-                    onClick={handlePrev}
-                    disabled={currentIndex === 0}
-                    className="p-3 rounded-xl bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border border-zinc-200 dark:border-zinc-700"
-                  >
-                    <ChevronLeftIcon className="w-5 h-5" />
-                  </button>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleLearning}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-all font-medium text-sm"
-                    >
-                      <BookmarkIcon className="w-4 h-4" />
-                      <span className="hidden sm:inline">Still Learning</span>
-                      <span className="sm:hidden">←</span>
-                    </button>
-                    <button
-                      onClick={handleKnown}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all font-medium text-sm"
-                    >
-                      <CheckIcon className="w-4 h-4" />
-                      <span className="hidden sm:inline">I Know This</span>
-                      <span className="sm:hidden">→</span>
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={handleNext}
-                    disabled={currentIndex === filteredVocab.length - 1}
-                    className="p-3 rounded-xl bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border border-zinc-200 dark:border-zinc-700"
-                  >
-                    <ChevronRightIcon className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Stats row */}
-                <div className="flex items-center justify-center gap-6 text-sm">
-                  <span className="flex items-center gap-1.5 text-emerald-600">
-                    <CheckCircleIcon className="w-4 h-4" />
-                    {knownWords.size} known
-                  </span>
-                  <span className="text-zinc-300 dark:text-zinc-600">|</span>
-                  <span className="flex items-center gap-1.5 text-yellow-600">
-                    <BookmarkIcon className="w-4 h-4" />
-                    {learningWords.size} learning
-                  </span>
-                  <span className="text-zinc-300 dark:text-zinc-600">|</span>
-                  <button
-                    onClick={resetProgress}
-                    className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 flex items-center gap-1 transition-colors"
-                    title="Reset all progress"
-                  >
-                    <ArrowPathIcon className="w-3.5 h-3.5" />
-                    Reset
-                  </button>
-                </div>
-              </>
-            )}
-          </>
-        )}
-
-        {/* ===== GRID VIEW ===== */}
-        {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredVocab.map((item) => {
-              const isKnown = knownWords.has(item.id);
-              const isLearning = learningWords.has(item.id);
-              return (
-                <div
-                  key={item.id}
-                  className={`bg-white dark:bg-zinc-900 rounded-2xl border p-4 transition-all duration-200 hover:shadow-md ${
-                    isKnown
-                      ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/10'
-                      : isLearning
-                      ? 'border-yellow-200 dark:border-yellow-800 bg-yellow-50/30 dark:bg-yellow-900/10'
-                      : 'border-zinc-200 dark:border-zinc-800'
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <Badge variant="primary" className="text-xs">{item.category}</Badge>
-                    {isKnown && (
-                      <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                  {/* Known/Learning indicator */}
+                  {currentCard && knownWords.has(currentCard.id) && (
+                    <div style={{ position: 'absolute', top: 16, right: 16 }}>
+                      <span style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 4, 
+                        fontSize: 12, 
+                        fontWeight: 500, 
+                        color: '#10b981', 
+                        background: 'rgba(16,185,129,0.1)', 
+                        padding: '4px 8px', 
+                        borderRadius: 100,
+                        border: '1px solid rgba(16,185,129,0.2)'
+                      }}>
                         <CheckCircleIcon className="w-3.5 h-3.5" /> Known
                       </span>
-                    )}
-                    {isLearning && (
-                      <span className="text-xs text-yellow-600 font-medium flex items-center gap-1">
+                    </div>
+                  )}
+                  {currentCard && learningWords.has(currentCard.id) && !knownWords.has(currentCard.id) && (
+                    <div style={{ position: 'absolute', top: 16, right: 16 }}>
+                      <span style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 4, 
+                        fontSize: 12, 
+                        fontWeight: 500, 
+                        color: '#f59e0b', 
+                        background: 'rgba(245,158,11,0.1)', 
+                        padding: '4px 8px', 
+                        borderRadius: 100,
+                        border: '1px solid rgba(245,158,11,0.2)'
+                      }}>
                         <BookmarkIcon className="w-3.5 h-3.5" /> Learning
                       </span>
-                    )}
-                  </div>
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{item.word}</h3>
-                  <p className="text-sm text-zinc-500 mb-1">{item.transliteration}</p>
-                  <p className="text-primary font-semibold">{item.translation}</p>
-                  {item.arabic && (
-                    <p className="text-base arabic-text text-zinc-600 dark:text-zinc-400 mt-2" dir="rtl">
-                      {item.arabic}
-                    </p>
+                    </div>
                   )}
-                  {item.example && (
-                    <p className="text-xs text-zinc-400 mt-2 italic line-clamp-2">{item.example}</p>
+
+                  {!isFlipped ? (
+                    <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+                      <Badge variant="default" className="mb-4">{currentCard?.category}</Badge>
+                      <h2 style={{ fontSize: 40, fontWeight: 700, color: '#f0e6d0', marginBottom: 12 }}>
+                        {currentCard?.word}
+                      </h2>
+                      <p style={{ fontSize: 18, color: '#8a7a6e', marginBottom: 12 }}>{currentCard?.transliteration}</p>
+                      <p style={{ fontSize: 20, fontWeight: 600, color: '#c8a96e' }}>{currentCard?.translation}</p>
+                      {currentCard?.arabic && (
+                        <p style={{ fontSize: 24, marginTop: 16, color: '#f0e6d0', direction: 'rtl', fontFamily: 'Noto Sans Arabic, sans-serif' }}>
+                          {currentCard.arabic}
+                        </p>
+                      )}
+                      {currentCard?.audioUrl && (
+                        <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+                          <AudioPlayer audioUrl={currentCard.audioUrl} />
+                        </div>
+                      )}
+                      <p style={{ fontSize: 12, color: '#5a4a3e', marginTop: 24 }}>Click or press Space to flip</p>
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
+                      <h2 style={{ fontSize: 24, fontWeight: 700, color: '#f0e6d0', marginBottom: 16 }}>
+                        {currentCard?.word}
+                      </h2>
+                      {currentCard?.example ? (
+                        <div style={{ 
+                          background: 'rgba(26,16,8,0.6)', 
+                          borderRadius: 12, 
+                          padding: 16, 
+                          marginBottom: 16, 
+                          textAlign: 'left',
+                          border: '1px solid rgba(200,169,110,0.1)'
+                        }}>
+                          <p style={{ fontSize: 13, fontWeight: 500, color: '#8a7a6e', marginBottom: 8 }}>Example:</p>
+                          <p style={{ color: '#f0e6d0', marginBottom: 8 }}>{currentCard.example}</p>
+                          {currentCard.exampleTranslation && (
+                            <p style={{ fontSize: 13, color: '#8a7a6e', fontStyle: 'italic' }}>{currentCard.exampleTranslation}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <p style={{ color: '#8a7a6e', marginBottom: 16 }}>No example available</p>
+                      )}
+                      <p style={{ fontSize: 12, color: '#5a4a3e' }}>Use buttons or ← → keys to mark</p>
+                    </div>
                   )}
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => {
-                        const newLearning = new Set(learningWords);
-                        const newKnown = new Set(knownWords);
-                        if (isLearning) {
-                          newLearning.delete(item.id);
-                        } else {
-                          newLearning.add(item.id);
-                          newKnown.delete(item.id);
-                        }
-                        setLearningWords(newLearning);
-                        setKnownWords(newKnown);
-                        saveProgress(newKnown, newLearning);
-                      }}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        isLearning
-                          ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-yellow-50 hover:text-yellow-600'
-                      }`}
-                    >
-                      {isLearning ? '★ Learning' : 'Mark Learning'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        const newKnown = new Set(knownWords);
-                        const newLearning = new Set(learningWords);
-                        if (isKnown) {
-                          newKnown.delete(item.id);
-                        } else {
-                          newKnown.add(item.id);
-                          newLearning.delete(item.id);
-                        }
-                        setKnownWords(newKnown);
-                        setLearningWords(newLearning);
-                        saveProgress(newKnown, newLearning);
-                      }}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        isKnown
-                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600'
-                      }`}
-                    >
-                      {isKnown ? '✓ Known' : 'Mark Known'}
-                    </button>
-                  </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
+              </div>
+
+              {/* Navigation + Action Buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <button
+                  onClick={handlePrev}
+                  disabled={currentIndex === 0}
+                  style={{
+                    padding: 12,
+                    borderRadius: 12,
+                    background: 'rgba(26,21,8,0.6)',
+                    color: currentIndex === 0 ? '#5a4a3e' : '#f0e6d0',
+                    border: '1px solid rgba(200,169,110,0.15)',
+                    cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
+                    opacity: currentIndex === 0 ? 0.4 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <ChevronLeftIcon className="w-5 h-5" />
+                </button>
+
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button
+                    onClick={handleLearning}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '10px 20px',
+                      borderRadius: 12,
+                      background: 'rgba(245,158,11,0.1)',
+                      color: '#f59e0b',
+                      border: '1px solid rgba(245,158,11,0.2)',
+                      cursor: 'pointer',
+                      fontSize: 14,
+                      fontWeight: 500,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <BookmarkIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline">Still Learning</span>
+                    <span className="sm:hidden">←</span>
+                  </button>
+                  <button
+                    onClick={handleKnown}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '10px 20px',
+                      borderRadius: 12,
+                      background: 'rgba(16,185,129,0.1)',
+                      color: '#10b981',
+                      border: '1px solid rgba(16,185,129,0.2)',
+                      cursor: 'pointer',
+                      fontSize: 14,
+                      fontWeight: 500,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <CheckIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline">I Know This</span>
+                    <span className="sm:hidden">→</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleNext}
+                  disabled={currentIndex === filteredVocab.length - 1}
+                  style={{
+                    padding: 12,
+                    borderRadius: 12,
+                    background: 'rgba(26,21,8,0.6)',
+                    color: currentIndex === filteredVocab.length - 1 ? '#5a4a3e' : '#f0e6d0',
+                    border: '1px solid rgba(200,169,110,0.15)',
+                    cursor: currentIndex === filteredVocab.length - 1 ? 'not-allowed' : 'pointer',
+                    opacity: currentIndex === filteredVocab.length - 1 ? 0.4 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <ChevronRightIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Stats row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, fontSize: 14 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#10b981' }}>
+                  <CheckCircleIcon className="w-4 h-4" />
+                  {knownWords.size} known
+                </span>
+                <span style={{ color: '#5a4a3e' }}>|</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#f59e0b' }}>
+                  <BookmarkIcon className="w-4 h-4" />
+                  {learningWords.size} learning
+                </span>
+                <span style={{ color: '#5a4a3e' }}>|</span>
+                <button
+                  onClick={resetProgress}
+                  style={{
+                    color: '#5a4a3e',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    transition: 'color 0.2s'
+                  }}
+                  title="Reset all progress"
+                >
+                  <ArrowPathIcon className="w-3.5 h-3.5" />
+                  Reset
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {/* ===== GRID VIEW ===== */}
+      {viewMode === 'grid' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+          {filteredVocab.map((item) => {
+            const isKnown = knownWords.has(item.id);
+            const isLearning = learningWords.has(item.id);
+            return (
+              <div
+                key={item.id}
+                style={{
+                  background: 'rgba(26,21,8,0.6)',
+                  borderRadius: 18,
+                  border: '1px solid',
+                  borderColor: isKnown 
+                    ? 'rgba(16,185,129,0.3)' 
+                    : isLearning 
+                    ? 'rgba(245,158,11,0.3)' 
+                    : 'rgba(200,169,110,0.15)',
+                  padding: 16,
+                  transition: 'all 0.2s'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Badge variant="default" className="text-xs">{item.category}</Badge>
+                  {isKnown && (
+                    <span style={{ fontSize: 12, color: '#10b981', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <CheckCircleIcon className="w-3.5 h-3.5" /> Known
+                    </span>
+                  )}
+                  {isLearning && !isKnown && (
+                    <span style={{ fontSize: 12, color: '#f59e0b', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <BookmarkIcon className="w-3.5 h-3.5" /> Learning
+                    </span>
+                  )}
+                </div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: '#f0e6d0', marginBottom: 4 }}>{item.word}</h3>
+                <p style={{ fontSize: 14, color: '#8a7a6e', marginBottom: 4 }}>{item.transliteration}</p>
+                <p style={{ fontWeight: 600, color: '#c8a96e' }}>{item.translation}</p>
+                {item.arabic && (
+                  <p style={{ fontSize: 16, color: '#f0e6d0', marginTop: 8, direction: 'rtl', fontFamily: 'Noto Sans Arabic, sans-serif' }} dir="rtl">
+                    {item.arabic}
+                  </p>
+                )}
+                {item.example && (
+                  <p style={{ fontSize: 12, color: '#5a4a3e', marginTop: 8, fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2 }}>{item.example}</p>
+                )}
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  <button
+                    onClick={() => {
+                      const newLearning = new Set(learningWords);
+                      const newKnown = new Set(knownWords);
+                      if (isLearning) {
+                        newLearning.delete(item.id);
+                      } else {
+                        newLearning.add(item.id);
+                        newKnown.delete(item.id);
+                      }
+                      setLearningWords(newLearning);
+                      setKnownWords(newKnown);
+                      saveProgress(newKnown, newLearning);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '6px 12px',
+                      borderRadius: 8,
+                      fontSize: 12,
+                      fontWeight: 500,
+                      background: isLearning ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.05)',
+                      color: isLearning ? '#f59e0b' : '#8a7a6e',
+                      border: `1px solid ${isLearning ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {isLearning ? '★ Learning' : 'Mark Learning'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newKnown = new Set(knownWords);
+                      const newLearning = new Set(learningWords);
+                      if (isKnown) {
+                        newKnown.delete(item.id);
+                      } else {
+                        newKnown.add(item.id);
+                        newLearning.delete(item.id);
+                      }
+                      setKnownWords(newKnown);
+                      setLearningWords(newLearning);
+                      saveProgress(newKnown, newLearning);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '6px 12px',
+                      borderRadius: 8,
+                      fontSize: 12,
+                      fontWeight: 500,
+                      background: isKnown ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)',
+                      color: isKnown ? '#10b981' : '#8a7a6e',
+                      border: `1px solid ${isKnown ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {isKnown ? '✓ Known' : 'Mark Known'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </PageWrapper>
   );
 }
