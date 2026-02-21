@@ -19,6 +19,7 @@ import {
   updateUserAfterSession
 } from '@/lib/spacedRepetition';
 import { VocabularyItem, UserProfile, SpacedRepetitionSession, SpacedRepetitionQuestion, AnswerResult, SessionResult, UserVocabularyProgress } from '@/types';
+import SoukRush from '@/components/games/SoukRush';
 import { 
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -30,10 +31,11 @@ import {
   SparklesIcon,
   LightBulbIcon,
   ClockIcon,
-  PencilSquareIcon
+  PencilSquareIcon,
+  PuzzlePieceIcon
 } from '@heroicons/react/24/outline';
 
-function PracticeIntro({ onStart, onStartTyping }: { onStart: () => void; onStartTyping: () => void }) {
+function PracticeIntro({ onStart, onStartTyping, onStartSoukRush }: { onStart: () => void; onStartTyping: () => void; onStartSoukRush: () => void }) {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
@@ -73,6 +75,21 @@ function PracticeIntro({ onStart, onStartTyping }: { onStart: () => void; onStar
                 <h3 className="font-semibold text-zinc-900 dark:text-white mb-1">Typing Practice</h3>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   Type the translation to improve your recall and spelling
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Souk Rush Game Card */}
+          <Card padding="lg" variant="interactive" className="text-left group cursor-pointer md:col-span-2" onClick={onStartSoukRush}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-orange-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <PuzzlePieceIcon className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-zinc-900 dark:text-white mb-1">Souk Rush 🪔</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Play a fun game! Catch the matching Darija lanterns as they fall from the sky
                 </p>
               </div>
             </div>
@@ -660,7 +677,7 @@ export default function PracticePage() {
   const [loadingSession, setLoadingSession] = useState(false);
   const [vocabulary, setVocabulary] = useState<VocabularyItem[]>([]);
   const [userProgress, setUserProgress] = useState<UserVocabularyProgress[]>([]);
-  const [practiceMode, setPracticeMode] = useState<'flashcard' | 'typing' | null>(null);
+  const [practiceMode, setPracticeMode] = useState<'flashcard' | 'typing' | 'soukRush' | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -712,11 +729,22 @@ export default function PracticePage() {
     setPracticeMode('typing');
   }, [vocabulary]);
 
+  const startSoukRushGame = useCallback(() => {
+    setPracticeMode('soukRush');
+  }, []);
+
   const handleSessionComplete = useCallback((result: SessionResult) => {
     setSessionResult(result);
     setPracticeMode(null);
     if (result.totalXpEarned > 0) {
       showXPToast(result.totalXpEarned, 'Practice complete!');
+    }
+  }, []);
+
+  const handleSoukRushComplete = useCallback((score: number, xpEarned: number) => {
+    setPracticeMode(null);
+    if (xpEarned > 0) {
+      showXPToast(xpEarned, `Souk Rush! Score: ${score}`);
     }
   }, []);
 
@@ -746,6 +774,16 @@ export default function PracticePage() {
     );
   }
 
+  if (practiceMode === 'soukRush' && vocabulary.length > 0) {
+    return (
+      <SoukRush
+        vocabulary={vocabulary}
+        onComplete={handleSoukRushComplete}
+        onExit={() => setPracticeMode(null)}
+      />
+    );
+  }
+
   if (practiceMode === 'typing' && typingVocabulary.length > 0) {
     return (
       <TypingPracticeSession 
@@ -765,6 +803,6 @@ export default function PracticePage() {
   }
 
   return (
-    <PracticeIntro onStart={startSession} onStartTyping={startTypingSession} />
+    <PracticeIntro onStart={startSession} onStartTyping={startTypingSession} onStartSoukRush={startSoukRushGame} />
   );
 }
