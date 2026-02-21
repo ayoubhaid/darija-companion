@@ -536,9 +536,9 @@ function UserDashboard({ userProfile }: { userProfile: any }) {
                       {wotd.known && <Badge variant="success" className="text-xs">Known</Badge>}
                     </div>
                     <h3 className="text-xl font-bold text-zinc-900 dark:text-white group-hover:text-amber-600 transition-colors">
-                      {wotd.darija}
+                      {wotd.word?.word}
                     </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{wotd.meaning}</p>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{wotd.word?.translation}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     {!wotd.known && (
