@@ -249,6 +249,10 @@ function TypingPracticeSession({
       correct: isCorrect,
       timeTaken: 5000,
       xpEarned: isCorrect ? 10 : 2,
+      newEaseFactor: 2.5,
+      newInterval: 1,
+      newRepetitions: 1,
+      nextReviewDate: new Date().toISOString(),
     };
 
     const newAnswers = [...answers, result];
