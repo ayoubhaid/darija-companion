@@ -3,47 +3,83 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
 import { STORIES } from '@/data/stories';
 import { BookOpenIcon, ClockIcon, ArrowRightIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
+const levelColors: Record<string, { bg: string; border: string; text: string }> = {
+  Beginner: { bg: 'rgba(107,155,210,0.10)', border: '#6b9bd244', text: '#6b9bd2' },
+  Intermediate: { bg: 'rgba(200,169,110,0.10)', border: '#c8a96e44', text: '#c8a96e' },
+  Advanced: { bg: 'rgba(212,132,90,0.10)', border: '#d4845a44', text: '#d4845a' },
+};
+
 function StoryCard({ story, onRead }: { story: typeof STORIES[0]; onRead: () => void }) {
-  const levelColors = {
-    Beginner: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    Intermediate: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
-    Advanced: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
-  };
+  const colors = levelColors[story.level] || levelColors.Beginner;
 
   return (
-    <Card variant="interactive" className="group">
-      <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
-          <BookOpenIcon className="w-7 h-7 text-white" />
+    <div
+      onClick={onRead}
+      style={{
+        background: colors.bg,
+        border: `1px solid ${colors.border}`,
+        borderRadius: 18,
+        padding: 24,
+        cursor: 'pointer',
+        transition: 'transform 0.22s cubic-bezier(0.4,0,0.2,1), box-shadow 0.22s',
+      }}
+      className="story-card"
+    >
+      <style>{`
+        .story-card:hover {
+          transform: translateY(-4px) scale(1.015);
+          box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+        }
+      `}</style>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: 14,
+          background: 'linear-gradient(135deg, #9b72b0 0%, #7eb8a4 100%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: '0 8px 24px rgba(155,114,176,0.3)',
+        }}>
+          <BookOpenIcon style={{ width: 28, height: 28, color: '#fff' }} />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-zinc-900 dark:text-white truncate">{story.title}</h3>
-            <span className="text-sm text-zinc-500">({story.titleDarija})</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: '#f0e6d0', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {story.title}
+            </h3>
+            <span style={{ fontSize: 14, color: '#6a5a4e' }}>({story.titleDarija})</span>
           </div>
-          <div className="flex items-center gap-3 mb-3">
-            <Badge className={levelColors[story.level]}>{story.level}</Badge>
-            <span className="text-xs text-zinc-500 flex items-center gap-1">
-              <ClockIcon className="w-3 h-3" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <span style={{
+              fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.1em',
+              textTransform: 'uppercase', padding: '4px 10px', borderRadius: 100,
+              background: `${colors.text}22`, color: colors.text, border: `1px solid ${colors.border}`,
+            }}>
+              {story.level}
+            </span>
+            <span style={{ fontSize: 12, color: '#6a5a4e', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <ClockIcon style={{ width: 14, height: 14 }} />
               {story.duration} min
             </span>
-            <span className="text-xs text-zinc-500">
+            <span style={{ fontSize: 12, color: '#6a5a4e' }}>
               {story.content.length} paragraphs
             </span>
           </div>
-          <Button size="sm" onClick={onRead} className="w-full">
+          <div style={{
+            width: '100%', padding: '12px 20px', borderRadius: 12,
+            background: 'rgba(200,169,110,0.15)', border: '1px solid rgba(200,169,110,0.3)',
+            color: '#c8a96e', fontFamily: "'DM Mono',monospace", fontSize: 13, letterSpacing: '0.05em',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            cursor: 'pointer', transition: 'all 0.2s',
+          }}>
             Read Story
-            <ArrowRightIcon className="w-4 h-4 ml-2" />
-          </Button>
+            <ArrowRightIcon style={{ width: 16, height: 16 }} />
+          </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -61,130 +97,200 @@ function StoryReader({ story, onClose }: { story: typeof STORIES[0]; onClose: ()
   const [question, options, correctIndex] = story.comprehensionQuestions;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{story.title}</h1>
-            <p className="text-zinc-500">{story.titleDarija}</p>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+        *{box-sizing:border-box}
+        .sh-root{
+          min-height:100vh;
+          background:radial-gradient(ellipse at 20% 0%,#2a1505 0%,#0e0804 60%),
+                      radial-gradient(ellipse at 80% 100%,#12060e 0%,transparent 50%);
+          position:relative;overflow-x:hidden;
+        }
+        .sh-root::before{
+          content:'';position:fixed;inset:0;
+          background-image:
+            repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px),
+            repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px);
+          pointer-events:none;z-index:0;
+        }
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+        .sh-btn{
+          border-radius:12px;
+          padding:12px 20px;
+          font-family:'DM Mono',monospace;
+          font-size:13px;
+          letter-spacing:0.05em;
+          cursor:pointer;
+          transition:all 0.2s;
+          border:1px solid;
+        }
+        .sh-btn-primary{
+          background:rgba(200,169,110,0.2);
+          border-color:#c8a96e;
+          color:#c8a96e;
+        }
+        .sh-btn-primary:hover{background:rgba(200,169,110,0.3)}
+        .sh-btn-secondary{
+          background:rgba(255,255,255,0.04);
+          border-color:rgba(200,169,110,0.2);
+          color:#8a7a6e;
+        }
+        .sh-btn-secondary:hover{background:rgba(255,255,255,0.08)}
+        .sh-card{
+          background:rgba(255,255,255,0.03);
+          border:1px solid rgba(200,169,110,0.1);
+          border-radius:18px;
+          padding:28px;
+        }
+        .quiz-option{
+          width:100%;
+          padding:18px;
+          border-radius:14px;
+          text-align:left;
+          font-family:'Lora',serif;
+          font-size:15px;
+          transition:all 0.2s;
+          border:1px solid rgba(200,169,110,0.2);
+          background:rgba(255,255,255,0.03);
+          color:#8a7a6e;
+        }
+        .quiz-option:hover:not(:disabled){
+          border-color:#c8a96e;
+          background:rgba(200,169,110,0.1);
+          color:#f0e6d0;
+        }
+        .quiz-option.correct{
+          border-color:#7eb8a4;
+          background:rgba(126,184,164,0.15);
+          color:#7eb8a4;
+        }
+        .quiz-option.incorrect{
+          border-color:#d4845a;
+          background:rgba(212,132,90,0.15);
+          color:#d4845a;
+        }
+        .quiz-option.disabled{
+          opacity:0.4;
+          cursor:default;
+        }
+      `}</style>
+
+      <div className="sh-root">
+        <div style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(80px,10vw,120px) clamp(16px,4vw,40px) 60px', position: 'relative', zIndex: 1 }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+            <div>
+              <h1 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 900, fontSize: 32, color: '#f0e6d0', marginBottom: 4 }}>{story.title}</h1>
+              <p style={{ fontFamily: "'Lora',serif", fontSize: 16, color: '#8a7a6e' }}>{story.titleDarija}</p>
+            </div>
+            <button onClick={onClose} className="sh-btn sh-btn-secondary">
+              Close
+            </button>
           </div>
-          <Button variant="secondary" onClick={onClose}>
-            Close
-          </Button>
-        </div>
 
-        {/* Toggle Buttons */}
-        <div className="flex gap-2 mb-6">
-          <Button 
-            variant={showTranslation ? 'primary' : 'secondary'} 
-            size="sm" 
-            onClick={() => setShowTranslation(true)}
-          >
-            With Translation
-          </Button>
-          <Button 
-            variant={!showTranslation ? 'primary' : 'secondary'} 
-            size="sm" 
-            onClick={() => setShowTranslation(false)}
-          >
-            Darija Only
-          </Button>
-          <Button 
-            variant={showVocab ? 'primary' : 'secondary'} 
-            size="sm" 
-            onClick={() => setShowVocab(!showVocab)}
-          >
-            Vocabulary ({story.vocabulary.length})
-          </Button>
-        </div>
-
-        {/* Story Content */}
-        <Card padding="lg" className="mb-6">
-          <div className="space-y-6">
-            {story.content.map((paragraph, index) => (
-              <div key={index} className="border-b border-zinc-200 dark:border-zinc-700 pb-4 last:border-0">
-                <p className="text-xl font-medium text-zinc-900 dark:text-white mb-2" dir="rtl">
-                  {paragraph.darija}
-                </p>
-                {showTranslation && (
-                  <p className="text-zinc-600 dark:text-zinc-400">{paragraph.english}</p>
-                )}
-              </div>
-            ))}
+          {/* Toggle Buttons */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
+            <button 
+              onClick={() => setShowTranslation(true)}
+              className={`sh-btn ${showTranslation ? 'sh-btn-primary' : 'sh-btn-secondary'}`}
+            >
+              With Translation
+            </button>
+            <button 
+              onClick={() => setShowTranslation(false)}
+              className={`sh-btn ${!showTranslation ? 'sh-btn-primary' : 'sh-btn-secondary'}`}
+            >
+              Darija Only
+            </button>
+            <button 
+              onClick={() => setShowVocab(!showVocab)}
+              className={`sh-btn ${showVocab ? 'sh-btn-primary' : 'sh-btn-secondary'}`}
+            >
+              Vocabulary ({story.vocabulary.length})
+            </button>
           </div>
-        </Card>
 
-        {/* Vocabulary Section */}
-        {showVocab && (
-          <Card padding="lg" className="mb-6">
-            <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Vocabulary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {story.vocabulary.map((vocab, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800">
-                  <div className="flex-1">
-                    <p className="font-medium text-zinc-900 dark:text-white">{vocab.word}</p>
-                    <p className="text-sm text-zinc-500">{vocab.transliteration}</p>
-                  </div>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">{vocab.meaning}</p>
+          {/* Story Content */}
+          <div className="sh-card" style={{ marginBottom: 24 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {story.content.map((paragraph, index) => (
+                <div key={index} style={{ borderBottom: index < story.content.length - 1 ? '1px solid rgba(200,169,110,0.1)' : 'none', paddingBottom: index < story.content.length - 1 ? 20 : 0 }}>
+                  <p style={{ fontSize: 20, fontWeight: 500, color: '#f0e6d0', marginBottom: 10, fontFamily: "'Lora',serif", textAlign: 'right', direction: 'rtl' }}>
+                    {paragraph.darija}
+                  </p>
+                  {showTranslation && (
+                    <p style={{ fontFamily: "'Lora',serif", fontSize: 15, color: '#8a7a6e', lineHeight: 1.6 }}>{paragraph.english}</p>
+                  )}
                 </div>
               ))}
             </div>
-          </Card>
-        )}
-
-        {/* Comprehension Quiz */}
-        <Card padding="lg">
-          <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Comprehension Quiz</h3>
-          <p className="text-lg text-zinc-700 dark:text-zinc-300 mb-4">{question}</p>
-          <div className="space-y-3">
-            {options.map((option, index) => {
-              let buttonClass = 'w-full p-4 rounded-xl border-2 text-left transition-all duration-200 ';
-              
-              if (showResult) {
-                if (index === correctIndex) {
-                  buttonClass += 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300';
-                } else if (index === selectedAnswer && index !== correctIndex) {
-                  buttonClass += 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-300';
-                } else {
-                  buttonClass += 'border-zinc-200 dark:border-zinc-700 text-zinc-400';
-                }
-              } else {
-                buttonClass += 'border-zinc-200 dark:border-zinc-700 hover:border-primary hover:bg-primary/5';
-              }
-
-              return (
-                <button
-                  key={index}
-                  onClick={() => !showResult && handleAnswer(index)}
-                  disabled={showResult}
-                  className={buttonClass}
-                >
-                  <span className="font-medium">{option}</span>
-                  {showResult && index === correctIndex && (
-                    <CheckIcon className="w-5 h-5 inline ml-2" />
-                  )}
-                  {showResult && index === selectedAnswer && index !== correctIndex && (
-                    <XMarkIcon className="w-5 h-5 inline ml-2" />
-                  )}
-                </button>
-              );
-            })}
           </div>
-          {showResult && (
-            <div className="mt-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800">
-              {selectedAnswer === correctIndex ? (
-                <p className="text-green-600 font-medium">Correct! Well done! 🎉</p>
-              ) : (
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  The correct answer is: <span className="font-semibold">{options[correctIndex]}</span>
-                </p>
-              )}
+
+          {/* Vocabulary Section */}
+          {showVocab && (
+            <div className="sh-card" style={{ marginBottom: 24 }}>
+              <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 20, color: '#f0e6d0', marginBottom: 20 }}>Vocabulary</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 12 }}>
+                {story.vocabulary.map((vocab, index) => (
+                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12, background: 'rgba(255,255,255,0.03)' }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 16, color: '#f0e6d0', margin: 0 }}>{vocab.word}</p>
+                      <p style={{ fontSize: 13, color: '#6a5a4e', margin: '4px 0 0' }}>{vocab.transliteration}</p>
+                    </div>
+                    <p style={{ fontSize: 14, color: '#8a7a6e', textAlign: 'right' }}>{vocab.meaning}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-        </Card>
+
+          {/* Comprehension Quiz */}
+          <div className="sh-card">
+            <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 20, color: '#f0e6d0', marginBottom: 16 }}>Comprehension Quiz</h3>
+            <p style={{ fontSize: 17, color: '#c8a96e', marginBottom: 16, fontFamily: "'Lora',serif" }}>{question}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {options.map((option, index) => {
+                let btnClass = 'quiz-option';
+                if (showResult) {
+                  if (index === correctIndex) btnClass += ' correct';
+                  else if (index === selectedAnswer) btnClass += ' incorrect';
+                  else btnClass += ' disabled';
+                }
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => !showResult && handleAnswer(index)}
+                    disabled={showResult}
+                    className={btnClass}
+                  >
+                    <span style={{ fontWeight: 500 }}>{option}</span>
+                    {showResult && index === correctIndex && (
+                      <CheckIcon style={{ width: 20, height: 20, marginLeft: 8, display: 'inline' }} />
+                    )}
+                    {showResult && index === selectedAnswer && index !== correctIndex && (
+                      <XMarkIcon style={{ width: 20, height: 20, marginLeft: 8, display: 'inline' }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {showResult && (
+              <div style={{ marginTop: 16, padding: 16, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(200,169,110,0.1)' }}>
+                {selectedAnswer === correctIndex ? (
+                  <p style={{ color: '#7eb8a4', fontFamily: "'DM Mono',monospace", fontSize: 14 }}>Correct! Well done! 🎉</p>
+                ) : (
+                  <p style={{ color: '#8a7a6e', fontFamily: "'Lora',serif", fontSize: 14 }}>
+                    The correct answer is: <span style={{ fontWeight: 600, color: '#c8a96e' }}>{options[correctIndex]}</span>
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -199,16 +305,53 @@ export default function StoriesPage() {
 
   if (!loading && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 pt-20">
-        <div className="text-center">
-          <BookOpenIcon className="w-16 h-16 text-zinc-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">Sign in to read stories</h2>
-          <p className="text-zinc-500 mb-4">Create an account to access reading comprehension stories</p>
-          <Link href="/login">
-            <Button>Sign In</Button>
-          </Link>
+      <>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+          *{box-sizing:border-box}
+          .sh-root{
+            min-height:100vh;
+            background:radial-gradient(ellipse at 20% 0%,#2a1505 0%,#0e0804 60%),
+                        radial-gradient(ellipse at 80% 100%,#12060e 0%,transparent 50%);
+            position:relative;overflow-x:hidden;
+          }
+          .sh-root::before{
+            content:'';position:fixed;inset:0;
+            background-image:
+              repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px),
+              repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px);
+            pointer-events:none;z-index:0;
+          }
+          .sh-btn{
+            border-radius:14px;
+            padding:14px 28px;
+            font-family:'DM Mono',monospace;
+            font-size:14px;
+            letter-spacing:0.05em;
+            cursor:pointer;
+            transition:all 0.2s;
+            border:1px solid #c8a96e;
+            background:rgba(200,169,110,0.15);
+            color:#c8a96e;
+          }
+          .sh-btn:hover{
+            background:rgba(200,169,110,0.25);
+            transform:translateY(-2px);
+          }
+        `}</style>
+        <div className="sh-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+          <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+            <div style={{ width: 80, height: 80, margin: '0 auto 20px', background: 'linear-gradient(135deg, #9b72b0 0%, #7eb8a4 100%)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 40px rgba(155,114,176,0.3)' }}>
+              <BookOpenIcon style={{ width: 40, height: 40, color: '#fff' }} />
+            </div>
+            <h2 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 900, fontSize: 28, color: '#f0e6d0', marginBottom: 8 }}>Sign in to read stories</h2>
+            <p style={{ fontFamily: "'Lora',serif", fontSize: 16, color: '#8a7a6e', marginBottom: 24, maxWidth: 320, margin: '0 auto 24px' }}>Create an account to access reading comprehension stories</p>
+            <Link href="/login">
+              <button className="sh-btn">Sign In</button>
+            </Link>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -217,51 +360,104 @@ export default function StoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-3xl shadow-glow-md mb-6">
-            <BookOpenIcon className="w-10 h-10 text-white" />
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+        *{box-sizing:border-box}
+        .sh-root{
+          min-height:100vh;
+          background:radial-gradient(ellipse at 20% 0%,#2a1505 0%,#0e0804 60%),
+                      radial-gradient(ellipse at 80% 100%,#12060e 0%,transparent 50%);
+          position:relative;overflow-x:hidden;
+        }
+        .sh-root::before{
+          content:'';position:fixed;inset:0;
+          background-image:
+            repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px),
+            repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px);
+          pointer-events:none;z-index:0;
+        }
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+        .sh-filter-btn{
+          border-radius:100px;
+          padding:10px 20px;
+          font-family:'DM Mono',monospace;
+          font-size:12px;
+          letter-spacing:0.08em;
+          text-transform:uppercase;
+          cursor:pointer;
+          transition:all 0.2s;
+          border:1px solid transparent;
+          background:rgba(255,255,255,0.04);
+          color:#8a7a6e;
+        }
+        .sh-filter-btn:hover{
+          background:rgba(255,255,255,0.08);
+        }
+        .sh-filter-btn.active{
+          background:rgba(200,169,110,0.15);
+          border-color:#c8a96e44;
+          color:#c8a96e;
+        }
+      `}</style>
+
+      <div className="sh-root">
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: 'clamp(80px,10vw,120px) clamp(16px,4vw,40px) 60px', position: 'relative', zIndex: 1 }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(to right,transparent,#7a5e32)', maxWidth: 60 }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, letterSpacing: "0.3em", color: "#8a6a4a", textTransform: "uppercase" }}>
+                Moroccan Darija
+              </span>
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(to left,transparent,#7a5e32)', maxWidth: 60 }} />
+            </div>
+
+            <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(38px,7vw,68px)", fontWeight: 900, color: "#f0e6d0", lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: 14 }}>
+              Reading Comprehension
+            </h1>
+            <p style={{ fontFamily: "'Lora',serif", fontStyle: "italic", fontSize: "clamp(15px,2.5vw,19px)", color: "#8a7a6e", maxWidth: 520, margin: "0 auto 28px" }}>
+              Practice your Darija reading skills with short stories
+            </p>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+              <div style={{ height: 1, width: 60, background: 'linear-gradient(to right,transparent,#c8a96e)' }} />
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#c8a96e" }} />
+              <div style={{ height: 1, width: 60, background: 'linear-gradient(to left,transparent,#c8a96e)' }} />
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-4">Reading Comprehension</h1>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-            Practice your Darija reading skills with short stories. Each story includes vocabulary, 
-            translation, and a comprehension quiz.
-          </p>
-        </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {(['All', 'Beginner', 'Intermediate', 'Advanced'] as const).map((level) => (
-            <Button
-              key={level}
-              variant={filter === level ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilter(level)}
-            >
-              {level}
-            </Button>
-          ))}
-        </div>
-
-        {/* Stories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredStories.map((story) => (
-            <StoryCard
-              key={story.id}
-              story={story}
-              onRead={() => setSelectedStory(story)}
-            />
-          ))}
-        </div>
-
-        {filteredStories.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-zinc-500">No stories found for this level.</p>
+          {/* Filters */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginBottom: 40 }}>
+            {(['All', 'Beginner', 'Intermediate', 'Advanced'] as const).map((level) => (
+              <button
+                key={level}
+                onClick={() => setFilter(level)}
+                className={`sh-filter-btn ${filter === level ? 'active' : ''}`}
+              >
+                {level}
+              </button>
+            ))}
           </div>
-        )}
+
+          {/* Stories Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(380px,1fr))', gap: 20 }}>
+            {filteredStories.map((story) => (
+              <StoryCard
+                key={story.id}
+                story={story}
+                onRead={() => setSelectedStory(story)}
+              />
+            ))}
+          </div>
+
+          {filteredStories.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <p style={{ fontFamily: "'Lora',serif", fontSize: 16, color: '#8a7a6e' }}>No stories found for this level.</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

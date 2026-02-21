@@ -1,10 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import { SpeakerWaveIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import { AcademicCapIcon } from '@heroicons/react/24/outline';
 
 interface SoundEntry {
   arabic: string;
@@ -223,38 +220,59 @@ const SOUND_CATEGORIES: { name: string; description: string; sounds: SoundEntry[
   },
 ];
 
-function SoundCard({ sound }: { sound: SoundEntry }) {
-  const [isPlaying, setIsPlaying] = useState(false);
+const difficultyColors: Record<string, { bg: string; border: string; text: string }> = {
+  easy: { bg: 'rgba(126,184,164,0.10)', border: '#7eb8a444', text: '#7eb8a4' },
+  medium: { bg: 'rgba(200,169,110,0.10)', border: '#c8a96e44', text: '#c8a96e' },
+  hard: { bg: 'rgba(212,132,90,0.10)', border: '#d4845a44', text: '#d4845a' },
+};
 
-  const difficultyColors = {
-    easy: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    medium: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
-    hard: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
-  };
+function SoundCard({ sound }: { sound: SoundEntry }) {
+  const colors = difficultyColors[sound.difficulty] || difficultyColors.easy;
 
   return (
-    <Card variant="default" className="mb-4">
-      <div className="flex items-start gap-4 mb-4">
-        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg flex-shrink-0">
-          <span className="text-3xl arabic-text" dir="rtl">{sound.arabic}</span>
+    <div style={{
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid rgba(200,169,110,0.1)',
+      borderRadius: 18,
+      padding: 24,
+      marginBottom: 20,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: 14,
+          background: 'linear-gradient(135deg, #9b72b0 0%, #7eb8a4 100%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: '0 8px 24px rgba(155,114,176,0.3)',
+          fontSize: 32,
+        }}>
+          <span style={{ fontFamily: 'serif' }}>{sound.arabic}</span>
         </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-zinc-900 dark:text-white">{sound.name}</h3>
-            <Badge className={difficultyColors[sound.difficulty]}>{sound.difficulty}</Badge>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+            <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 20, color: '#f0e6d0', margin: 0 }}>
+              {sound.name}
+            </h3>
+            <span style={{
+              fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.1em',
+              textTransform: 'uppercase', padding: '4px 10px', borderRadius: 100,
+              background: `${colors.text}22`, color: colors.text, border: `1px solid ${colors.border}`,
+            }}>
+              {sound.difficulty}
+            </span>
           </div>
-          <p className="text-sm text-zinc-500 mb-1">{sound.transliteration}</p>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">{sound.description}</p>
+          <p style={{ fontSize: 13, color: '#6a5a4e', marginBottom: 6 }}>{sound.transliteration}</p>
+          <p style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#8a7a6e', lineHeight: 1.5 }}>{sound.description}</p>
         </div>
       </div>
 
       {/* Tips */}
-      <div className="mb-4">
-        <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-2">Tips:</h4>
-        <ul className="space-y-1">
+      <div style={{ marginBottom: 20 }}>
+        <h4 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: '#f0e6d0', marginBottom: 10 }}>Tips:</h4>
+        <ul style={{ paddingLeft: 20, margin: 0 }}>
           {sound.tips.map((tip, index) => (
-            <li key={index} className="text-sm text-zinc-600 dark:text-zinc-400 flex items-start gap-2">
-              <span className="text-primary">•</span>
+            <li key={index} style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#8a7a6e', marginBottom: 6, lineHeight: 1.5 }}>
+              <span style={{ color: '#c8a96e', marginRight: 6 }}>•</span>
               {tip}
             </li>
           ))}
@@ -263,17 +281,17 @@ function SoundCard({ sound }: { sound: SoundEntry }) {
 
       {/* Examples */}
       <div>
-        <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-2">Examples:</h4>
-        <div className="space-y-2">
+        <h4 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: '#f0e6d0', marginBottom: 10 }}>Examples:</h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {sound.examples.map((example, index) => (
-            <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800">
-              <span className="arabic-text text-lg" dir="rtl">{example.darija}</span>
-              <span className="text-sm text-zinc-500">{example.english}</span>
+            <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.03)' }}>
+              <span style={{ fontFamily: 'serif', fontSize: 18, color: '#f0e6d0', textAlign: 'right', flex: 1 }}>{example.darija}</span>
+              <span style={{ fontFamily: "'Lora',serif", fontSize: 13, color: '#6a5a4e', textAlign: 'right', flex: 1 }}>{example.english}</span>
             </div>
           ))}
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -294,114 +312,191 @@ export default function PronunciationPage() {
     : SOUND_CATEGORIES;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-3xl shadow-glow-md mb-6">
-            <AcademicCapIcon className="w-10 h-10 text-white" />
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+        *{box-sizing:border-box}
+        .sh-root{
+          min-height:100vh;
+          background:radial-gradient(ellipse at 20% 0%,#2a1505 0%,#0e0804 60%),
+                      radial-gradient(ellipse at 80% 100%,#12060e 0%,transparent 50%);
+          position:relative;overflow-x:hidden;
+        }
+        .sh-root::before{
+          content:'';position:fixed;inset:0;
+          background-image:
+            repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px),
+            repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px);
+          pointer-events:none;z-index:0;
+        }
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+        .sh-tab-btn{
+          border-radius:100px;
+          padding:10px 20px;
+          font-family:'DM Mono',monospace;
+          font-size:12px;
+          letter-spacing:0.08em;
+          text-transform:uppercase;
+          cursor:pointer;
+          transition:all 0.2s;
+          border:1px solid transparent;
+          background:rgba(255,255,255,0.04);
+          color:#8a7a6e;
+        }
+        .sh-tab-btn:hover{background:rgba(255,255,255,0.08)}
+        .sh-tab-btn.active{
+          background:rgba(200,169,110,0.15);
+          border-color:#c8a96e44;
+          color:#c8a96e;
+        }
+        .sh-input{
+          border-radius:14px;
+          padding:16px 20px;
+          background:rgba(255,255,255,0.04);
+          border:1px solid rgba(200,169,110,0.2);
+          color:#f0e6d0;
+          font-family:'Lora',serif;
+          font-size:15px;
+          outline:none;
+          transition:border-color 0.2s,box-shadow 0.2s;
+          width:100%;
+        }
+        .sh-input:focus{
+          border-color:#c8a96e;
+          box-shadow:0 0 0 3px rgba(200,169,110,0.15);
+        }
+        .sh-input::placeholder{color:#5a4a3e}
+        .sh-ref-box{
+          padding:10px 14px;
+          border-radius:10px;
+          background:rgba(255,255,255,0.03);
+          font-size:13px;
+          color:#8a7a6e;
+        }
+        .sh-ref-box span{
+          font-family:'DM Mono',monospace;
+          color:#c8a96e;
+          font-weight:500;
+        }
+      `}</style>
+
+      <div className="sh-root">
+        <div style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(80px,10vw,120px) clamp(16px,4vw,40px) 60px', position: 'relative', zIndex: 1 }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(to right,transparent,#7a5e32)', maxWidth: 60 }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, letterSpacing: "0.3em", color: "#8a6a4a", textTransform: "uppercase" }}>
+                Moroccan Darija
+              </span>
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(to left,transparent,#7a5e32)', maxWidth: 60 }} />
+            </div>
+
+            <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(38px,7vw,68px)", fontWeight: 900, color: "#f0e6d0", lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: 14 }}>
+              Pronunciation Guide
+            </h1>
+            <p style={{ fontFamily: "'Lora',serif", fontStyle: "italic", fontSize: "clamp(15px,2.5vw,19px)", color: "#8a7a6e", maxWidth: 520, margin: "0 auto 28px" }}>
+              Master the unique sounds of Moroccan Darija
+            </p>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+              <div style={{ height: 1, width: 60, background: 'linear-gradient(to right,transparent,#c8a96e)' }} />
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#c8a96e" }} />
+              <div style={{ height: 1, width: 60, background: 'linear-gradient(to left,transparent,#c8a96e)' }} />
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-4">Pronunciation Guide</h1>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-            Master the unique sounds of Moroccan Darija. Each sound includes tips, examples, and practice words.
-          </p>
-        </div>
 
-        {/* Quick Reference */}
-        <Card padding="lg" className="mb-8">
-          <h2 className="font-semibold text-zinc-900 dark:text-white mb-4">Quick Reference - Transliteration Key</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-800">
-              <span className="font-mono text-primary">7</span> = ح (breathy h)
-            </div>
-            <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-800">
-              <span className="font-mono text-primary">3</span> = ع (glottal stop)
-            </div>
-            <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-800">
-              <span className="font-mono text-primary">kh</span> = خ (German ch)
-            </div>
-            <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-800">
-              <span className="font-mono text-primary">gh</span> = غ (guttural r)
-            </div>
-            <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-800">
-              <span className="font-mono text-primary">q</span> = ق (emphatic k)
-            </div>
-            <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-800">
-              <span className="font-mono text-primary">sh</span> = ش (sh sound)
-            </div>
-            <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-800">
-              <span className="font-mono text-primary">j</span> = ج (j sound)
-            </div>
-            <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-800">
-              <span className="font-mono text-primary">aa</span> = long a
+          {/* Quick Reference */}
+          <div style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(200,169,110,0.1)',
+            borderRadius: 18,
+            padding: 24,
+            marginBottom: 32,
+          }}>
+            <h2 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: '#f0e6d0', marginBottom: 16 }}>Quick Reference - Transliteration Key</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 10 }}>
+              <div className="sh-ref-box"><span>7</span> = ح (breathy h)</div>
+              <div className="sh-ref-box"><span>3</span> = ع (glottal stop)</div>
+              <div className="sh-ref-box"><span>kh</span> = خ (German ch)</div>
+              <div className="sh-ref-box"><span>gh</span> = غ (guttural r)</div>
+              <div className="sh-ref-box"><span>q</span> = ق (emphatic k)</div>
+              <div className="sh-ref-box"><span>sh</span> = ش (sh sound)</div>
+              <div className="sh-ref-box"><span>j</span> = ج (j sound)</div>
+              <div className="sh-ref-box"><span>aa</span> = long a</div>
             </div>
           </div>
-        </Card>
 
-        {/* Category Tabs */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {SOUND_CATEGORIES.map((category, index) => (
-            <Button
-              key={category.name}
-              variant={activeCategory === index ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setActiveCategory(index)}
-            >
-              {category.name}
-            </Button>
-          ))}
-        </div>
-
-        {/* Search */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search sounds..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
-
-        {/* Sounds List */}
-        {(searchQuery ? filteredSounds : [SOUND_CATEGORIES[activeCategory]]).map((category) => (
-          <div key={category.name}>
-            {!searchQuery && (
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">{category.name}</h2>
-                <p className="text-zinc-600 dark:text-zinc-400">{category.description}</p>
-              </div>
-            )}
-            {category.sounds.map((sound) => (
-              <SoundCard key={sound.transliteration} sound={sound} />
+          {/* Category Tabs */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 24 }}>
+            {SOUND_CATEGORIES.map((category, index) => (
+              <button
+                key={category.name}
+                onClick={() => setActiveCategory(index)}
+                className={`sh-tab-btn ${activeCategory === index ? 'active' : ''}`}
+              >
+                {category.name}
+              </button>
             ))}
           </div>
-        ))}
 
-        {!searchQuery && SOUND_CATEGORIES[activeCategory].sounds.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-zinc-500">No sounds in this category.</p>
+          {/* Search */}
+          <div style={{ marginBottom: 32 }}>
+            <input
+              type="text"
+              placeholder="Search sounds..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="sh-input"
+            />
           </div>
-        )}
 
-        {searchQuery && filteredSounds.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-zinc-500">No sounds found matching "{searchQuery}"</p>
+          {/* Sounds List */}
+          {(searchQuery ? filteredSounds : [SOUND_CATEGORIES[activeCategory]]).map((category) => (
+            <div key={category.name}>
+              {!searchQuery && (
+                <div style={{ marginBottom: 24 }}>
+                  <h2 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 900, fontSize: 28, color: '#f0e6d0', marginBottom: 8 }}>{category.name}</h2>
+                  <p style={{ fontFamily: "'Lora',serif", fontSize: 15, color: '#8a7a6e' }}>{category.description}</p>
+                </div>
+              )}
+              {category.sounds.map((sound) => (
+                <SoundCard key={sound.transliteration} sound={sound} />
+              ))}
+            </div>
+          ))}
+
+          {!searchQuery && SOUND_CATEGORIES[activeCategory].sounds.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <p style={{ fontFamily: "'Lora',serif", fontSize: 16, color: '#8a7a6e' }}>No sounds in this category.</p>
+            </div>
+          )}
+
+          {searchQuery && filteredSounds.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <p style={{ fontFamily: "'Lora',serif", fontSize: 16, color: '#8a7a6e' }}>No sounds found matching "{searchQuery}"</p>
+            </div>
+          )}
+
+          {/* Practice Tip */}
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(155,114,176,0.1) 0%, rgba(126,184,164,0.1) 100%)',
+            border: '1px solid rgba(155,114,176,0.2)',
+            borderRadius: 18,
+            padding: 24,
+            marginTop: 32,
+          }}>
+            <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: '#f0e6d0', marginBottom: 12 }}>Practice Tips</h3>
+            <ul style={{ paddingLeft: 20, margin: 0 }}>
+              <li style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#8a7a6e', marginBottom: 8, lineHeight: 1.5 }}>Listen to native speakers and try to mimic their pronunciation</li>
+              <li style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#8a7a6e', marginBottom: 8, lineHeight: 1.5 }}>Practice in front of a mirror to see your mouth position</li>
+              <li style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#8a7a6e', marginBottom: 8, lineHeight: 1.5 }}>Record yourself and compare with native audio</li>
+              <li style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#8a7a6e', marginBottom: 8, lineHeight: 1.5 }}>Focus on one sound at a time until comfortable</li>
+              <li style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#8a7a6e', lineHeight: 1.5 }}>Practice daily - even 5 minutes makes a difference!</li>
+            </ul>
           </div>
-        )}
-
-        {/* Practice Tip */}
-        <Card padding="lg" className="mt-8 bg-gradient-to-r from-violet-500/10 to-purple-500/10 border-violet-500/20">
-          <h3 className="font-semibold text-zinc-900 dark:text-white mb-2">Practice Tips</h3>
-          <ul className="space-y-2 text-zinc-600 dark:text-zinc-400">
-            <li>• Listen to native speakers and try to mimic their pronunciation</li>
-            <li>• Practice in front of a mirror to see your mouth position</li>
-            <li>• Record yourself and compare with native audio</li>
-            <li>• Focus on one sound at a time until comfortable</li>
-            <li>• Practice daily - even 5 minutes makes a difference!</li>
-          </ul>
-        </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

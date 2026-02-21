@@ -1,26 +1,22 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
 import { PHRASEBOOK_SCENARIOS, PHRASEBOOK_CATEGORIES, Scenario } from '@/data/phrasebook';
 import {
   MagnifyingGlassIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   LightBulbIcon,
-  BookOpenIcon,
   ChatBubbleLeftRightIcon,
   CheckCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { clsx } from 'clsx';
 
-const difficultyColors = {
-  beginner: 'success',
-  intermediate: 'warning',
-  advanced: 'danger',
-} as const;
+const difficultyColors: Record<string, { bg: string; border: string; text: string }> = {
+  beginner: { bg: 'rgba(126,184,164,0.10)', border: '#7eb8a444', text: '#7eb8a4' },
+  intermediate: { bg: 'rgba(200,169,110,0.10)', border: '#c8a96e44', text: '#c8a96e' },
+  advanced: { bg: 'rgba(212,132,90,0.10)', border: '#d4845a44', text: '#d4845a' },
+};
 
 // ─── Practice Quiz for a scenario ────────────────────────────────────────────
 function PracticeQuiz({ scenario, onClose }: { scenario: Scenario; onClose: () => void }) {
@@ -63,22 +59,22 @@ function PracticeQuiz({ scenario, onClose }: { scenario: Scenario; onClose: () =
   if (done) {
     const pct = Math.round((score / questions.length) * 100);
     return (
-      <div className="text-center py-8">
-        <div className="text-5xl mb-4">{pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪'}</div>
-        <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Practice Complete!</h3>
-        <p className="text-zinc-500 mb-6">
+      <div style={{ textAlign: 'center', padding: '32px 0' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>{pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪'}</div>
+        <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 22, color: '#f0e6d0', marginBottom: 8 }}>Practice Complete!</h3>
+        <p style={{ fontFamily: "'Lora',serif", fontSize: 15, color: '#8a7a6e', marginBottom: 24 }}>
           {score}/{questions.length} correct ({pct}%)
         </p>
-        <div className="flex gap-3 justify-center">
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
           <button
             onClick={() => { setCurrentIdx(0); setUserInput(''); setSubmitted(false); setScore(0); setDone(false); }}
-            className="px-4 py-2 bg-primary/10 text-primary rounded-xl font-medium text-sm hover:bg-primary/20 transition-colors"
+            style={{ padding: '12px 20px', borderRadius: 12, background: 'rgba(200,169,110,0.15)', border: '1px solid rgba(200,169,110,0.3)', color: '#c8a96e', fontFamily: "'DM Mono',monospace", fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' }}
           >
             Try Again
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-xl font-medium text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            style={{ padding: '12px 20px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#8a7a6e', fontFamily: "'DM Mono',monospace", fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' }}
           >
             Back to Dialogue
           </button>
@@ -89,23 +85,22 @@ function PracticeQuiz({ scenario, onClose }: { scenario: Scenario; onClose: () =
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-zinc-900 dark:text-white">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: '#f0e6d0' }}>
           Practice Key Phrases
         </h3>
-        <span className="text-sm text-zinc-500">{currentIdx + 1}/{questions.length}</span>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: '#6a5a4e' }}>{currentIdx + 1}/{questions.length}</span>
       </div>
 
-      <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full mb-6 overflow-hidden">
+      <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 100, marginBottom: 24, overflow: 'hidden' }}>
         <div
-          className="h-full bg-primary rounded-full transition-all duration-300"
-          style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
+          style={{ height: '100%', background: '#c8a96e', borderRadius: 100, transition: 'all 0.3s', width: `${((currentIdx + 1) / questions.length) * 100}%` }}
         />
       </div>
 
-      <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 mb-4">
-        <p className="text-sm text-zinc-500 mb-1">Translate to Darija:</p>
-        <p className="text-lg font-semibold text-zinc-900 dark:text-white">{current.prompt}</p>
+      <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 20, marginBottom: 20 }}>
+        <p style={{ fontSize: 13, color: '#6a5a4e', marginBottom: 6 }}>Translate to Darija:</p>
+        <p style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 20, color: '#f0e6d0' }}>{current.prompt}</p>
       </div>
 
       <input
@@ -114,34 +109,40 @@ function PracticeQuiz({ scenario, onClose }: { scenario: Scenario; onClose: () =
         onChange={(e) => !submitted && setUserInput(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && !submitted && handleSubmit()}
         placeholder="Type in Darija..."
-        className={clsx(
-          'w-full px-4 py-3 rounded-xl border-2 text-zinc-900 dark:text-white bg-white dark:bg-zinc-900 focus:outline-none transition-all mb-3',
-          submitted
-            ? isCorrect
-              ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-              : 'border-red-500 bg-red-50 dark:bg-red-900/20'
-            : 'border-zinc-200 dark:border-zinc-700 focus:border-primary'
-        )}
+        style={{
+          width: '100%',
+          padding: '16px 18px',
+          borderRadius: 14,
+          border: `2px solid ${submitted ? (isCorrect ? '#7eb8a4' : '#d4845a') : 'rgba(200,169,110,0.2)'}`,
+          background: submitted ? (isCorrect ? 'rgba(126,184,164,0.1)' : 'rgba(212,132,90,0.1)') : 'rgba(255,255,255,0.04)',
+          color: '#f0e6d0',
+          fontFamily: "'Lora',serif",
+          fontSize: 15,
+          outline: 'none',
+          marginBottom: 16,
+          transition: 'all 0.2s',
+        }}
         disabled={submitted}
         autoFocus
       />
 
       {submitted && (
-        <div className={clsx(
-          'p-3 rounded-xl mb-4 text-sm',
-          isCorrect
-            ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800'
-            : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-        )}>
+        <div style={{
+          padding: 14,
+          borderRadius: 14,
+          marginBottom: 16,
+          background: isCorrect ? 'rgba(126,184,164,0.1)' : 'rgba(212,132,90,0.1)',
+          border: `1px solid ${isCorrect ? '#7eb8a444' : '#d4845a44'}`,
+        }}>
           {isCorrect ? (
-            <p className="text-emerald-700 dark:text-emerald-400 font-medium">✓ Correct!</p>
+            <p style={{ color: '#7eb8a4', fontFamily: "'DM Mono',monospace", fontSize: 13, fontWeight: 500 }}>✓ Correct!</p>
           ) : (
             <>
-              <p className="text-red-700 dark:text-red-400 font-medium">✗ Not quite</p>
-              <p className="text-zinc-600 dark:text-zinc-400 mt-1">
-                Answer: <span className="font-semibold">{current.answer}</span>
+              <p style={{ color: '#d4845a', fontFamily: "'DM Mono',monospace", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>✗ Not quite</p>
+              <p style={{ color: '#8a7a6e', fontFamily: "'Lora',serif", fontSize: 14 }}>
+                Answer: <span style={{ fontWeight: 600, color: '#f0e6d0' }}>{current.answer}</span>
                 {current.transliteration !== current.answer && (
-                  <span className="text-zinc-400"> ({current.transliteration})</span>
+                  <span style={{ color: '#6a5a4e' }}> ({current.transliteration})</span>
                 )}
               </p>
             </>
@@ -153,14 +154,39 @@ function PracticeQuiz({ scenario, onClose }: { scenario: Scenario; onClose: () =
         <button
           onClick={handleSubmit}
           disabled={!userInput.trim()}
-          className="w-full py-3 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          style={{
+            width: '100%',
+            padding: '16px',
+            borderRadius: 14,
+            background: userInput.trim() ? '#c8a96e' : 'rgba(200,169,110,0.2)',
+            border: 'none',
+            color: userInput.trim() ? '#0e0804' : '#8a7a6e',
+            fontFamily: "'DM Mono',monospace",
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: userInput.trim() ? 'pointer' : 'not-allowed',
+            opacity: userInput.trim() ? 1 : 0.5,
+            transition: 'all 0.2s',
+          }}
         >
           Check Answer
         </button>
       ) : (
         <button
           onClick={handleNext}
-          className="w-full py-3 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+          style={{
+            width: '100%',
+            padding: '16px',
+            borderRadius: 14,
+            background: '#c8a96e',
+            border: 'none',
+            color: '#0e0804',
+            fontFamily: "'DM Mono',monospace",
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
         >
           {currentIdx < questions.length - 1 ? 'Next Phrase →' : 'See Results 🎉'}
         </button>
@@ -173,52 +199,71 @@ function PracticeQuiz({ scenario, onClose }: { scenario: Scenario; onClose: () =
 function ScenarioCard({ scenario }: { scenario: Scenario }) {
   const [expanded, setExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<'dialogue' | 'phrases' | 'practice'>('dialogue');
+  const diffColors = difficultyColors[scenario.difficulty] || difficultyColors.beginner;
 
   return (
-    <Card variant="default" className="overflow-hidden">
+    <div style={{
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid rgba(200,169,110,0.1)',
+      borderRadius: 18,
+      overflow: 'hidden',
+      marginBottom: 16,
+    }}>
       {/* Header */}
       <button
         onClick={() => setExpanded((e) => !e)}
-        className="w-full flex items-center gap-4 p-5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 16, padding: 20, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', transition: 'background 0.2s' }}
       >
-        <div className="text-3xl flex-shrink-0">{scenario.icon}</div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-zinc-900 dark:text-white">{scenario.title}</h3>
-            <Badge variant={difficultyColors[scenario.difficulty]} size="sm">
+        <div style={{ fontSize: 32, flexShrink: 0 }}>{scenario.icon}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+            <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: '#f0e6d0', margin: 0 }}>{scenario.title}</h3>
+            <span style={{
+              fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.1em',
+              textTransform: 'uppercase', padding: '4px 10px', borderRadius: 100,
+              background: `${diffColors.text}22`, color: diffColors.text, border: `1px solid ${diffColors.border}`,
+            }}>
               {scenario.difficulty}
-            </Badge>
+            </span>
           </div>
-          <p className="text-sm text-zinc-500 truncate">{scenario.description}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">
+          <p style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#6a5a4e', marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{scenario.description}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 11, color: '#5a4a3e', background: 'rgba(255,255,255,0.04)', padding: '3px 10px', borderRadius: 100 }}>
               {scenario.category}
             </span>
-            <span className="text-xs text-zinc-400">
+            <span style={{ fontSize: 11, color: '#5a4a3e' }}>
               {scenario.dialogue.length} lines · {scenario.keyPhrases.length} key phrases
             </span>
           </div>
         </div>
-        <div className="flex-shrink-0 text-zinc-400">
-          {expanded ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
+        <div style={{ color: '#5a4a3e', flexShrink: 0 }}>
+          {expanded ? <ChevronUpIcon style={{ width: 24, height: 24 }} /> : <ChevronDownIcon style={{ width: 24, height: 24 }} />}
         </div>
       </button>
 
       {/* Expanded content */}
       {expanded && (
-        <div className="border-t border-zinc-200 dark:border-zinc-700">
+        <div style={{ borderTop: '1px solid rgba(200,169,110,0.1)' }}>
           {/* Tabs */}
-          <div className="flex border-b border-zinc-200 dark:border-zinc-700">
+          <div style={{ display: 'flex', borderBottom: '1px solid rgba(200,169,110,0.1)' }}>
             {(['dialogue', 'phrases', 'practice'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={clsx(
-                  'flex-1 py-3 text-sm font-medium transition-colors',
-                  activeTab === tab
-                    ? 'text-primary border-b-2 border-primary bg-primary/5'
-                    : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-                )}
+                style={{
+                  flex: 1,
+                  padding: '14px 16px',
+                  fontFamily: "'DM Mono',monospace",
+                  fontSize: 12,
+                  letterSpacing: '0.05em',
+                  textAlign: 'center',
+                  background: activeTab === tab ? 'rgba(200,169,110,0.1)' : 'transparent',
+                  border: 'none',
+                  borderBottom: activeTab === tab ? '2px solid #c8a96e' : '2px solid transparent',
+                  color: activeTab === tab ? '#c8a96e' : '#6a5a4e',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
               >
                 {tab === 'dialogue' && '💬 Dialogue'}
                 {tab === 'phrases' && '📝 Key Phrases'}
@@ -227,55 +272,57 @@ function ScenarioCard({ scenario }: { scenario: Scenario }) {
             ))}
           </div>
 
-          <div className="p-5">
+          <div style={{ padding: 20 }}>
             {/* Dialogue Tab */}
             {activeTab === 'dialogue' && (
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {scenario.dialogue.map((line, i) => (
                   <div
                     key={i}
-                    className={clsx(
-                      'flex gap-3',
-                      line.speaker === 'B' && 'flex-row-reverse'
-                    )}
+                    style={{
+                      display: 'flex',
+                      gap: 12,
+                      flexDirection: line.speaker === 'B' ? 'row-reverse' : 'row',
+                    }}
                   >
                     <div
-                      className={clsx(
-                        'w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0',
-                        line.speaker === 'A'
-                          ? 'bg-primary'
-                          : 'bg-accent'
-                      )}
+                      style={{
+                        width: 32, height: 32, borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontSize: 12, fontWeight: 700, flexShrink: 0,
+                        background: line.speaker === 'A' ? '#c8a96e' : '#9b72b0',
+                      }}
                     >
                       {line.speaker}
                     </div>
                     <div
-                      className={clsx(
-                        'max-w-[80%] rounded-2xl px-4 py-3',
-                        line.speaker === 'A'
-                          ? 'bg-zinc-100 dark:bg-zinc-800 rounded-tl-sm'
-                          : 'bg-primary/10 dark:bg-primary/20 rounded-tr-sm'
-                      )}
+                      style={{
+                        maxWidth: '80%',
+                        borderRadius: 16,
+                        padding: '14px 18px',
+                        background: line.speaker === 'A' ? 'rgba(255,255,255,0.04)' : 'rgba(200,169,110,0.1)',
+                        border: '1px solid rgba(200,169,110,0.1)',
+                      }}
                     >
-                      <p className="font-semibold text-zinc-900 dark:text-white text-sm">
+                      <p style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 15, color: '#f0e6d0', marginBottom: 4 }}>
                         {line.darija}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-0.5 italic">{line.transliteration}</p>
-                      <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{line.english}</p>
+                      <p style={{ fontFamily: "'Lora',serif", fontSize: 12, color: '#6a5a4e', fontStyle: 'italic', marginBottom: 2 }}>{line.transliteration}</p>
+                      <p style={{ fontFamily: "'Lora',serif", fontSize: 13, color: '#8a7a6e' }}>{line.english}</p>
                     </div>
                   </div>
                 ))}
 
                 {/* Cultural Note */}
                 {scenario.culturalNote && (
-                  <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                    <div className="flex items-start gap-2">
-                      <LightBulbIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div style={{ marginTop: 16, padding: 16, background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.2)', borderRadius: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <LightBulbIcon style={{ width: 20, height: 20, color: '#c8a96e', flexShrink: 0, marginTop: 2 }} />
                       <div>
-                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-1">
+                        <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: '#c8a96e', fontWeight: 500, marginBottom: 4 }}>
                           Cultural Note
                         </p>
-                        <p className="text-sm text-amber-700 dark:text-amber-300">
+                        <p style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#8a7a6e', lineHeight: 1.5 }}>
                           {scenario.culturalNote}
                         </p>
                       </div>
@@ -287,17 +334,17 @@ function ScenarioCard({ scenario }: { scenario: Scenario }) {
 
             {/* Key Phrases Tab */}
             {activeTab === 'phrases' && (
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {scenario.keyPhrases.map((phrase, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 12 }}
                   >
                     <div>
-                      <p className="font-semibold text-zinc-900 dark:text-white">{phrase.darija}</p>
-                      <p className="text-xs text-zinc-500 italic">{phrase.transliteration}</p>
+                      <p style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 16, color: '#f0e6d0', marginBottom: 2 }}>{phrase.darija}</p>
+                      <p style={{ fontFamily: "'Lora',serif", fontSize: 12, color: '#6a5a4e', fontStyle: 'italic' }}>{phrase.transliteration}</p>
                     </div>
-                    <p className="text-sm text-primary font-medium text-right">{phrase.english}</p>
+                    <p style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#c8a96e', textAlign: 'right' }}>{phrase.english}</p>
                   </div>
                 ))}
               </div>
@@ -310,7 +357,7 @@ function ScenarioCard({ scenario }: { scenario: Scenario }) {
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
 
@@ -346,125 +393,178 @@ export default function PhrasebookPage() {
   }, [searchQuery, categoryFilter, difficultyFilter]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-24 md:pb-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow-sm">
-              <ChatBubbleLeftRightIcon className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Phrasebook</h1>
-              <p className="text-zinc-500 text-sm">Real conversations for real situations</p>
-            </div>
-          </div>
-          <p className="text-zinc-600 dark:text-zinc-400 max-w-2xl">
-            Learn Darija through authentic dialogues. Each scenario includes a full conversation,
-            key phrases to memorize, and a practice quiz to test yourself.
-          </p>
-        </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+        *{box-sizing:border-box}
+        .sh-root{
+          min-height:100vh;
+          background:radial-gradient(ellipse at 20% 0%,#2a1505 0%,#0e0804 60%),
+                      radial-gradient(ellipse at 80% 100%,#12060e 0%,transparent 50%);
+          position:relative;overflow-x:hidden;
+        }
+        .sh-root::before{
+          content:'';position:fixed;inset:0;
+          background-image:
+            repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px),
+            repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(200,169,110,0.025) 60px,rgba(200,169,110,0.025) 61px);
+          pointer-events:none;z-index:0;
+        }
+        .sh-filter-btn{
+          padding:8px 16px;
+          border-radius:12px;
+          font-family:'DM Mono',monospace;
+          font-size:11px;
+          letter-spacing:0.05em;
+          cursor:pointer;
+          transition:all 0.2s;
+          border:1px solid;
+        }
+        .sh-filter-btn.active{
+          background:rgba(200,169,110,0.2);
+          border-color:#c8a96e;
+          color:#c8a96e;
+        }
+        .sh-filter-btn.inactive{
+          background:rgba(255,255,255,0.04);
+          border-color:rgba(255,255,255,0.1);
+          color:#6a5a4e;
+        }
+        .sh-filter-btn.inactive:hover{
+          background:rgba(255,255,255,0.08);
+        }
+        .sh-input{
+          border-radius:14px;
+          padding:16px 20px;
+          background:rgba(255,255,255,0.04);
+          border:1px solid rgba(200,169,110,0.2);
+          color:#f0e6d0;
+          font-family:'Lora',serif;
+          font-size:15px;
+          outline:none;
+          transition:border-color 0.2s,box-shadow 0.2s;
+          width:100%;
+        }
+        .sh-input:focus{
+          border-color:#c8a96e;
+          box-shadow:0 0 0 3px rgba(200,169,110,0.15);
+        }
+        .sh-input::placeholder{color:#5a4a3e}
+        .sh-stat-box{
+          background:rgba(255,255,255,0.03);
+          border:1px solid rgba(200,169,110,0.1);
+          border-radius:14px;
+          padding:16px;
+          text-align:center;
+        }
+      `}</style>
 
-        {/* Stats bar */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-white dark:bg-zinc-900 rounded-xl p-3 text-center border border-zinc-200 dark:border-zinc-800">
-            <div className="text-2xl font-bold text-primary">{PHRASEBOOK_SCENARIOS.length}</div>
-            <div className="text-xs text-zinc-500">Scenarios</div>
-          </div>
-          <div className="bg-white dark:bg-zinc-900 rounded-xl p-3 text-center border border-zinc-200 dark:border-zinc-800">
-            <div className="text-2xl font-bold text-accent">
-              {PHRASEBOOK_SCENARIOS.reduce((a, s) => a + s.keyPhrases.length, 0)}
+      <div className="sh-root">
+        <div style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(80px,10vw,120px) clamp(16px,4vw,40px) 60px', position: 'relative', zIndex: 1 }}>
+          {/* Header */}
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(135deg, #c8a96e 0%, #9b72b0 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(200,169,110,0.3)' }}>
+                <ChatBubbleLeftRightIcon style={{ width: 28, height: 28, color: '#fff' }} />
+              </div>
+              <div>
+                <h1 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 900, fontSize: 36, color: '#f0e6d0', marginBottom: 4 }}>Phrasebook</h1>
+                <p style={{ fontFamily: "'Lora',serif", fontSize: 14, color: '#6a5a4e' }}>Real conversations for real situations</p>
+              </div>
             </div>
-            <div className="text-xs text-zinc-500">Key Phrases</div>
+            <p style={{ fontFamily: "'Lora',serif", fontSize: 15, color: '#8a7a6e', lineHeight: 1.6 }}>
+              Learn Darija through authentic dialogues. Each scenario includes a full conversation,
+              key phrases to memorize, and a practice quiz to test yourself.
+            </p>
           </div>
-          <div className="bg-white dark:bg-zinc-900 rounded-xl p-3 text-center border border-zinc-200 dark:border-zinc-800">
-            <div className="text-2xl font-bold text-violet-500">{PHRASEBOOK_CATEGORIES.length}</div>
-            <div className="text-xs text-zinc-500">Categories</div>
+
+          {/* Stats bar */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 32 }}>
+            <div className="sh-stat-box">
+              <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 900, fontSize: 28, color: '#c8a96e', marginBottom: 4 }}>{PHRASEBOOK_SCENARIOS.length}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#6a5a4e', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Scenarios</div>
+            </div>
+            <div className="sh-stat-box">
+              <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 900, fontSize: 28, color: '#9b72b0', marginBottom: 4 }}>
+                {PHRASEBOOK_SCENARIOS.reduce((a, s) => a + s.keyPhrases.length, 0)}
+              </div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#6a5a4e', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Key Phrases</div>
+            </div>
+            <div className="sh-stat-box">
+              <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 900, fontSize: 28, color: '#7eb8a4', marginBottom: 4 }}>{PHRASEBOOK_CATEGORIES.length}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#6a5a4e', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Categories</div>
+            </div>
           </div>
-        </div>
 
-        {/* Search */}
-        <div className="relative mb-4">
-          <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
-          <input
-            type="text"
-            placeholder="Search scenarios or phrases..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 text-zinc-900 dark:text-white placeholder-zinc-400"
-          />
-        </div>
+          {/* Search */}
+          <div style={{ position: 'relative', marginBottom: 24 }}>
+            <MagnifyingGlassIcon style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 20, height: 20, color: '#5a4a3e' }} />
+            <input
+              type="text"
+              placeholder="Search scenarios or phrases..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="sh-input"
+              style={{ paddingLeft: 50 }}
+            />
+          </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {/* Category filter */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1">
-            <button
-              onClick={() => setCategoryFilter('all')}
-              className={clsx(
-                'px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all',
-                categoryFilter === 'all'
-                  ? 'bg-primary text-white'
-                  : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700'
-              )}
-            >
-              All Topics
-            </button>
-            {PHRASEBOOK_CATEGORIES.map((cat) => (
+          {/* Filters */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 32 }}>
+            {/* Category filter */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button
-                key={cat}
-                onClick={() => setCategoryFilter(cat)}
-                className={clsx(
-                  'px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all',
-                  categoryFilter === cat
-                    ? 'bg-primary text-white'
-                    : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700'
-                )}
+                onClick={() => setCategoryFilter('all')}
+                className={`sh-filter-btn ${categoryFilter === 'all' ? 'active' : 'inactive'}`}
               >
-                {cat}
+                All Topics
               </button>
-            ))}
+              {PHRASEBOOK_CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
+                  className={`sh-filter-btn ${categoryFilter === cat ? 'active' : 'inactive'}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Difficulty filter */}
+            <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+              {['all', 'beginner', 'intermediate', 'advanced'].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDifficultyFilter(d)}
+                  className={`sh-filter-btn ${difficultyFilter === d ? 'active' : 'inactive'}`}
+                >
+                  {d === 'all' ? 'All Levels' : d.charAt(0).toUpperCase() + d.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Difficulty filter */}
-          <div className="flex gap-1.5 ml-auto">
-            {['all', 'beginner', 'intermediate', 'advanced'].map((d) => (
+          {/* Scenarios */}
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <ChatBubbleLeftRightIcon style={{ width: 48, height: 48, color: '#5a4a3e', margin: '0 auto 16px' }} />
+              <p style={{ fontFamily: "'Lora',serif", fontSize: 16, color: '#8a7a6e', marginBottom: 12 }}>No scenarios found</p>
               <button
-                key={d}
-                onClick={() => setDifficultyFilter(d)}
-                className={clsx(
-                  'px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all',
-                  difficultyFilter === d
-                    ? 'bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900'
-                    : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700'
-                )}
+                onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setDifficultyFilter('all'); }}
+                style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: '#c8a96e', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
               >
-                {d === 'all' ? 'All Levels' : d.charAt(0).toUpperCase() + d.slice(1)}
+                Clear filters
               </button>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {filtered.map((scenario) => (
+                <ScenarioCard key={scenario.id} scenario={scenario} />
+              ))}
+            </div>
+          )}
         </div>
-
-        {/* Scenarios */}
-        {filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <ChatBubbleLeftRightIcon className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
-            <p className="text-zinc-500">No scenarios found</p>
-            <button
-              onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setDifficultyFilter('all'); }}
-              className="mt-2 text-primary text-sm hover:underline"
-            >
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filtered.map((scenario) => (
-              <ScenarioCard key={scenario.id} scenario={scenario} />
-            ))}
-          </div>
-        )}
       </div>
-    </div>
+    </>
   );
 }
