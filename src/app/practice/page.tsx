@@ -2,9 +2,10 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { showXPToast } from '@/components/ui/XPToast';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -28,10 +29,11 @@ import {
   TrophyIcon,
   SparklesIcon,
   LightBulbIcon,
-  ClockIcon
+  ClockIcon,
+  PencilSquareIcon
 } from '@heroicons/react/24/outline';
 
-function PracticeIntro({ onStart }: { onStart: () => void }) {
+function PracticeIntro({ onStart, onStartTyping }: { onStart: () => void; onStartTyping: () => void }) {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
@@ -46,6 +48,37 @@ function PracticeIntro({ onStart }: { onStart: () => void }) {
           Train your vocabulary with spaced repetition. The more you practice, the better you remember!
         </p>
 
+        {/* Practice Mode Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <Card padding="lg" variant="interactive" className="text-left group cursor-pointer" onClick={onStart}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <SparklesIcon className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-zinc-900 dark:text-white mb-1">Flashcard Mode</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Multiple choice questions to test your vocabulary recognition
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card padding="lg" variant="interactive" className="text-left group cursor-pointer" onClick={onStartTyping}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <PencilSquareIcon className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-zinc-900 dark:text-white mb-1">Typing Practice</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Type the translation to improve your recall and spelling
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
         <Card padding="lg" className="text-left mb-8">
           <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">How it works:</h3>
           <ul className="space-y-3">
@@ -59,7 +92,7 @@ function PracticeIntro({ onStart }: { onStart: () => void }) {
               <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-3 mt-0.5">
                 <span className="text-primary text-sm font-bold">2</span>
               </div>
-              <span className="text-zinc-600 dark:text-zinc-300">Review words you&apos;ve learned + new words</span>
+              <span className="text-zinc-600 dark:text-zinc-300">Review words you've learned + new words</span>
             </li>
             <li className="flex items-start">
               <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-3 mt-0.5">
@@ -136,6 +169,248 @@ function SessionComplete({
         <Button onClick={onClose} size="lg" className="w-full">
           Continue
         </Button>
+      </div>
+    </div>
+  );
+}
+
+// Typing Practice Session Component
+function TypingPracticeSession({ 
+  vocabulary, 
+  onComplete 
+}: { 
+  vocabulary: VocabularyItem[]; 
+  onComplete: (result: SessionResult) => void;
+}) {
+  const { user, userProfile } = useAuth();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [userInput, setUserInput] = useState('');
+  const [answers, setAnswers] = useState<AnswerResult[]>([]);
+  const [submitted, setSubmitted] = useState(false);
+  const [startTime] = useState(Date.now());
+  const [streak, setStreak] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Get random words for typing practice
+  const questions = useMemo(() => {
+    const shuffled = [...vocabulary].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 15).map(word => ({
+      wordId: word.id,
+      darija: word.word,
+      transliteration: word.transliteration,
+      arabic: word.arabic,
+      correctAnswer: word.translation,
+    }));
+  }, [vocabulary]);
+
+  const currentQuestion = questions[currentIndex];
+  const progress = ((currentIndex + 1) / questions.length) * 100;
+
+  useEffect(() => {
+    if (inputRef.current && !submitted) {
+      inputRef.current.focus();
+    }
+  }, [currentIndex, submitted]);
+
+  const checkAnswer = (input: string, correct: string): boolean => {
+    const normalizedInput = input.toLowerCase().trim();
+    const normalizedCorrect = correct.toLowerCase().trim();
+    return normalizedInput === normalizedCorrect;
+  };
+
+  const handleSubmit = async () => {
+    if (!user || !userProfile || !userInput.trim()) return;
+
+    const isCorrect = checkAnswer(userInput, currentQuestion.correctAnswer);
+    
+    const defaultProfile = {
+      id: user.uid,
+      email: user.email || '',
+      displayName: user.displayName || 'User',
+      xp: 0,
+      level: 1,
+      streak: 0,
+      completedLessons: [],
+      completedQuizzes: [],
+      vocabularyLearned: 0,
+      totalXP: 0,
+      lastActive: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      skillLevel: 1,
+      accuracyRate: 0,
+      quizzesCompleted: 0,
+      lessonsCompleted: 0,
+    };
+    
+    const userProfileWithDefaults = { ...defaultProfile, ...userProfile };
+    
+    const result: AnswerResult = {
+      wordId: currentQuestion.wordId,
+      correct: isCorrect,
+      timeTaken: 5000,
+      xpEarned: isCorrect ? 10 : 2,
+    };
+
+    const newAnswers = [...answers, result];
+    setAnswers(newAnswers);
+    setSubmitted(true);
+    setStreak(isCorrect ? streak + 1 : 0);
+  };
+
+  const handleNext = async () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      setUserInput('');
+      setSubmitted(false);
+    } else {
+      const defaultProfile = {
+        id: user?.uid || '',
+        email: user?.email || '',
+        displayName: user?.displayName || 'User',
+        xp: 0,
+        level: 1,
+        streak: 0,
+        completedLessons: [],
+        completedQuizzes: [],
+        vocabularyLearned: 0,
+        totalXP: 0,
+        lastActive: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        skillLevel: 1,
+        accuracyRate: 0,
+        quizzesCompleted: 0,
+        lessonsCompleted: 0,
+      };
+      
+      const userProfileWithDefaults = { ...defaultProfile, ...userProfile };
+      
+      const result = calculateSessionResult(answers, userProfileWithDefaults, 'typing');
+      
+      if (user) {
+        await updateUserAfterSession(user.uid, result, userProfileWithDefaults);
+      }
+      
+      onComplete(result);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !submitted) {
+      handleSubmit();
+    } else if (e.key === 'Enter' && submitted) {
+      handleNext();
+    }
+  };
+
+  if (!currentQuestion) return null;
+
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12">
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-zinc-500">
+              Question {currentIndex + 1} of {questions.length}
+            </span>
+            <div className="flex items-center gap-2">
+              {streak > 1 && (
+                <Badge variant="warning" className="flex items-center gap-1">
+                  <FireIcon className="w-3 h-3" />
+                  {streak} streak
+                </Badge>
+              )}
+            </div>
+          </div>
+          <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Question Card */}
+        <Card padding="lg" className="mb-6">
+          <div className="text-center mb-8">
+            <Badge variant="warning" className="mb-4">Typing Practice</Badge>
+            <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+              {currentQuestion.darija}
+            </h2>
+            <p className="text-lg text-zinc-500">{currentQuestion.transliteration}</p>
+            {currentQuestion.arabic && (
+              <p className="text-2xl arabic-text text-zinc-700 dark:text-zinc-300 mt-2" dir="rtl">
+                {currentQuestion.arabic}
+              </p>
+            )}
+          </div>
+
+          {/* Typing Input */}
+          <div className="max-w-md mx-auto">
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">
+              Type the English translation:
+            </label>
+            <input
+              ref={inputRef}
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              disabled={submitted}
+              placeholder="Type your answer..."
+              className={`w-full px-4 py-3 text-lg rounded-xl border-2 transition-all duration-200 ${
+                submitted
+                  ? userInput.toLowerCase().trim() === currentQuestion.correctAnswer.toLowerCase().trim()
+                    ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300'
+                    : 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-300'
+                  : 'border-zinc-300 dark:border-zinc-600 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'
+              } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white`}
+            />
+            {submitted && (
+              <div className="mt-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800">
+                {userInput.toLowerCase().trim() === currentQuestion.correctAnswer.toLowerCase().trim() ? (
+                  <div className="flex items-center justify-center gap-2 text-green-600">
+                    <CheckIcon className="w-6 h-6" />
+                    <span className="font-semibold">Correct!</span>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-center gap-2 text-red-600 mb-2">
+                      <XMarkIcon className="w-6 h-6" />
+                      <span className="font-semibold">Not quite!</span>
+                    </div>
+                    <p className="text-sm text-zinc-500 text-center">
+                      Correct answer: <span className="font-semibold text-zinc-900 dark:text-white">{currentQuestion.correctAnswer}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Submit/Next Button */}
+        <div className="max-w-md mx-auto">
+          {!submitted ? (
+            <Button 
+              onClick={handleSubmit} 
+              size="lg" 
+              className="w-full"
+              disabled={!userInput.trim()}
+            >
+              Check Answer
+              <CheckIcon className="w-5 h-5 ml-2" />
+            </Button>
+          ) : (
+            <Button onClick={handleNext} size="lg" className="w-full">
+              {currentIndex < questions.length - 1 ? 'Next Word' : 'See Results'}
+              <ArrowRightIcon className="w-5 h-5 ml-2" />
+            </Button>
+          )}
+          <p className="text-center text-xs text-zinc-400 mt-3">
+            Press Enter to submit
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -376,10 +651,12 @@ export default function PracticePage() {
   const { user, userProfile, loading } = useAuth();
   const router = useRouter();
   const [session, setSession] = useState<SpacedRepetitionSession | null>(null);
+  const [typingVocabulary, setTypingVocabulary] = useState<VocabularyItem[]>([]);
   const [sessionResult, setSessionResult] = useState<SessionResult | null>(null);
   const [loadingSession, setLoadingSession] = useState(false);
   const [vocabulary, setVocabulary] = useState<VocabularyItem[]>([]);
   const [userProgress, setUserProgress] = useState<UserVocabularyProgress[]>([]);
+  const [practiceMode, setPracticeMode] = useState<'flashcard' | 'typing' | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -418,6 +695,7 @@ export default function PracticePage() {
         userProfile?.skillLevel || defaultProfile.skillLevel
       );
       setSession(newSession);
+      setPracticeMode('flashcard');
     } catch (error) {
       console.error('Error generating session:', error);
     } finally {
@@ -425,11 +703,24 @@ export default function PracticePage() {
     }
   }, [vocabulary, userProgress, userProfile]);
 
+  const startTypingSession = useCallback(() => {
+    setTypingVocabulary(vocabulary);
+    setPracticeMode('typing');
+  }, [vocabulary]);
+
   const handleSessionComplete = useCallback((result: SessionResult) => {
     setSessionResult(result);
+    setPracticeMode(null);
+    if (result.totalXpEarned > 0) {
+      showXPToast(result.totalXpEarned, 'Practice complete!');
+    }
   }, []);
 
   const handleClose = useCallback(() => {
+    setSession(null);
+    setTypingVocabulary([]);
+    setSessionResult(null);
+    setPracticeMode(null);
     router.push('/');
   }, [router]);
 
@@ -446,7 +737,16 @@ export default function PracticePage() {
       <SessionComplete 
         result={sessionResult} 
         onClose={handleClose}
-        vocabularyCount={session?.questions.length || 0}
+        vocabularyCount={practiceMode === 'typing' ? 15 : (session?.questions.length || 0)}
+      />
+    );
+  }
+
+  if (practiceMode === 'typing' && typingVocabulary.length > 0) {
+    return (
+      <TypingPracticeSession 
+        vocabulary={typingVocabulary} 
+        onComplete={handleSessionComplete}
       />
     );
   }
@@ -461,6 +761,6 @@ export default function PracticePage() {
   }
 
   return (
-    <PracticeIntro onStart={startSession} />
+    <PracticeIntro onStart={startSession} onStartTyping={startTypingSession} />
   );
 }

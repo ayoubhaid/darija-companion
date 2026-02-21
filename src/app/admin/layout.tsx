@@ -16,11 +16,15 @@ import {
   Settings,
   ChevronLeft,
   Bell,
+  FileText,
+  BarChart3,
 } from 'lucide-react';
 
 const adminNavigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Lessons', href: '/admin/lessons', icon: BookOpen },
+  { name: 'Templates', href: '/admin/templates', icon: FileText },
   { name: 'Vocabulary', href: '/admin/vocabulary', icon: Type },
   { name: 'Quizzes', href: '/admin/quizzes', icon: HelpCircle },
   { name: 'Users', href: '/admin/users', icon: Users },

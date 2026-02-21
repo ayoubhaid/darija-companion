@@ -11,12 +11,14 @@ import Button from '@/components/ui/Button';
 import { Quiz, Question } from '@/types';
 import { getQuizById, recordQuizResult, updateUserProgress } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
-import { 
+import { showXPToast } from '@/components/ui/XPToast';
+import {
   ArrowLeftIcon,
   CheckCircleIcon,
   XCircleIcon,
   FireIcon,
   TrophyIcon,
+  StarIcon,
 } from '@heroicons/react/24/outline';
 
 export default function QuizDetailPage() {
@@ -83,6 +85,8 @@ export default function QuizDetailPage() {
       const totalPoints = quiz.questions.reduce((acc, q) => acc + (q.points || 10), 0);
       await recordQuizResult(user.uid, quizId, score, totalPoints, 0);
       await updateUserProgress(user.uid, undefined, quizId, score);
+      // Show XP toast
+      showXPToast(quiz.xpReward || 10, 'Quiz complete!');
     }
   };
 
@@ -114,30 +118,45 @@ export default function QuizDetailPage() {
 
   if (quizCompleted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
-        <Card className="max-w-md w-full p-8 text-center">
-          <div className="w-20 h-20 mx-auto mb-6 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
-            <TrophyIcon className="w-10 h-10 text-primary-500" />
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center pt-20 pb-24 md:pb-12 px-4">
+        <Card padding="lg" className="max-w-md w-full text-center animate-fade-in-up">
+          <div className="w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-2xl flex items-center justify-center">
+            <TrophyIcon className="w-10 h-10 text-primary" />
           </div>
-          
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Quiz Completed!
+
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">
+            Quiz Completed! 🎉
           </h2>
-          
+
           <div className="mb-6">
-            <div className="text-4xl font-bold text-primary-500 mb-2">
-              {percentage}%
-            </div>
-            <p className="text-gray-600 dark:text-gray-400">
+            <div className="text-5xl font-bold text-primary mb-2">{percentage}%</div>
+            <p className="text-zinc-500">
               {score} out of {totalPoints} points
             </p>
           </div>
 
-          <Badge variant={percentage >= 70 ? 'success' : 'warning'} className="mb-6">
-            {percentage >= 70 ? 'Passed!' : 'Keep practicing!'}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-3">
+              <div className="text-lg font-bold text-zinc-900 dark:text-white">
+                {quiz.xpReward || 10}
+              </div>
+              <div className="text-xs text-zinc-500 flex items-center justify-center gap-1">
+                <StarIcon className="w-3 h-3 text-primary" /> XP Earned
+              </div>
+            </div>
+            <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-3">
+              <div className="text-lg font-bold text-zinc-900 dark:text-white">
+                {quiz.questions.length}
+              </div>
+              <div className="text-xs text-zinc-500">Questions</div>
+            </div>
+          </div>
+
+          <Badge variant={percentage >= 70 ? 'success' : 'warning'} className="mb-6 text-sm px-4 py-1.5">
+            {percentage >= 70 ? '✓ Passed!' : '💪 Keep practicing!'}
           </Badge>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <Link href="/quizzes" className="flex-1">
               <Button variant="outline" className="w-full">
                 Back to Quizzes
@@ -155,35 +174,42 @@ export default function QuizDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-24 md:pb-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <Link 
-            href="/quizzes" 
-            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-primary-500"
+          <Link
+            href="/quizzes"
+            className="inline-flex items-center text-zinc-500 hover:text-primary transition-colors"
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
             Back to Quizzes
           </Link>
         </div>
 
+        {/* Quiz header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-500">
-              Question {currentQuestion + 1} of {quiz.questions.length}
-            </span>
-            <Badge variant="primary">{quiz.xpReward || 10} XP</Badge>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h1 className="text-xl font-bold text-zinc-900 dark:text-white">{quiz.title}</h1>
+              <span className="text-sm text-zinc-500">
+                Question {currentQuestion + 1} of {quiz.questions.length}
+              </span>
+            </div>
+            <Badge variant="primary" className="flex items-center gap-1">
+              <StarIcon className="w-3.5 h-3.5" />
+              {quiz.xpReward || 10} XP
+            </Badge>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
-            <div 
-              className="bg-primary-500 h-2 rounded-full transition-all duration-300"
+          <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-primary to-accent h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }}
             />
           </div>
         </div>
 
-        <Card className="p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+        <Card padding="lg" className="mb-6">
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">
             {question?.question}
           </h2>
 
@@ -191,21 +217,22 @@ export default function QuizDetailPage() {
             {question?.options?.map((option, index) => {
               const isSelected = selectedAnswer === option;
               const isCorrectOption = option === question.correctAnswer;
-              
-              let buttonClass = 'w-full p-4 text-left rounded-lg border-2 transition-all ';
-              
+
+              let buttonClass =
+                'w-full p-4 text-left rounded-xl border-2 transition-all duration-200 ';
+
               if (showResult) {
                 if (isCorrectOption) {
-                  buttonClass += 'border-green-500 bg-green-50 dark:bg-green-900/30';
+                  buttonClass += 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20';
                 } else if (isSelected && !isCorrectOption) {
-                  buttonClass += 'border-red-500 bg-red-50 dark:bg-red-900/30';
+                  buttonClass += 'border-red-500 bg-red-50 dark:bg-red-900/20';
                 } else {
-                  buttonClass += 'border-gray-200 dark:border-slate-600 opacity-50';
+                  buttonClass += 'border-zinc-200 dark:border-zinc-700 opacity-40';
                 }
               } else {
-                buttonClass += isSelected 
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30' 
-                  : 'border-gray-200 dark:border-slate-600 hover:border-primary-300';
+                buttonClass += isSelected
+                  ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                  : 'border-zinc-200 dark:border-zinc-700 hover:border-primary/50 hover:bg-zinc-50 dark:hover:bg-zinc-800';
               }
 
               return (
@@ -216,12 +243,12 @@ export default function QuizDetailPage() {
                   className={buttonClass}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-900 dark:text-white">{option}</span>
+                    <span className="text-zinc-900 dark:text-white font-medium">{option}</span>
                     {showResult && isCorrectOption && (
-                      <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                      <CheckCircleIcon className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                     )}
                     {showResult && isSelected && !isCorrectOption && (
-                      <XCircleIcon className="w-5 h-5 text-red-500" />
+                      <XCircleIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
                     )}
                   </div>
                 </button>
@@ -230,28 +257,29 @@ export default function QuizDetailPage() {
           </div>
 
           {showResult && (
-            <div className={`mt-4 p-3 rounded-lg ${isCorrect ? 'bg-green-50 dark:bg-green-900/30' : 'bg-red-50 dark:bg-red-900/30'}`}>
-              <p className="text-sm font-medium">
-                {isCorrect ? 'Correct!' : 'Incorrect!'}
+            <div
+              className={`mt-4 p-4 rounded-xl ${
+                isCorrect
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800'
+                  : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+              }`}
+            >
+              <p className={`text-sm font-semibold mb-1 ${isCorrect ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                {isCorrect ? '✓ Correct!' : '✗ Incorrect!'}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {question.explanation}
-              </p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">{question.explanation}</p>
             </div>
           )}
         </Card>
 
         <div className="flex justify-end">
           {!showResult ? (
-            <Button 
-              onClick={checkAnswer} 
-              disabled={!selectedAnswer}
-            >
+            <Button onClick={checkAnswer} disabled={!selectedAnswer}>
               Check Answer
             </Button>
           ) : (
             <Button onClick={handleNext}>
-              {currentQuestion < quiz.questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+              {currentQuestion < quiz.questions.length - 1 ? 'Next Question →' : 'Finish Quiz 🎉'}
             </Button>
           )}
         </div>
