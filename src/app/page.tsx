@@ -311,7 +311,7 @@ function UserDashboard({ userProfile }: { userProfile: any }) {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [vocabulary, setVocabulary] = useState<VocabularyItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { word: wotd, loading: wotdLoading, markKnown } = useWordOfTheDay();
+  const { wotd, loading: wotdLoading, markKnown } = useWordOfTheDay();
 
   useEffect(() => {
     const fetchData = async () => {
